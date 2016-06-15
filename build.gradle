@@ -21,6 +21,7 @@ apply plugin: 'idea'
 dependencies {
     compile gradleApi()
     compile localGroovy()
+    compile 'com.android.tools.build:gradle:1.5.0'
 }
 
 allprojects {

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/apk-release-plugin.iml" filepath="$PROJECT_DIR$/apk-release-plugin.iml" />
-      <module fileurl="file://$PROJECT_DIR$/apk-releaser-plugin.iml" filepath="$PROJECT_DIR$/apk-releaser-plugin.iml" />
     </modules>
   </component>
 </project>
