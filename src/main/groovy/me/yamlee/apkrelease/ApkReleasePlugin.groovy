@@ -1,5 +1,6 @@
 package me.yamlee.apkrelease
 
+import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Plugin
 import org.gradle.api.Project;
 
@@ -15,7 +16,7 @@ class ApkReleasePlugin implements Plugin<Project> {
         project.task('hello') << {
             println("Hello ${project.apkRelease.message}")
         }
-    }
 
+    }
 
 }
