@@ -62,6 +62,11 @@ class VcsAutoCommitorTest {
 
     @Test
     public void testGenerateChangeLog() throws Exception {
-        vcsAutoCommitor.generateChangeLog()
+        File file = new File(versionPropertyFilePath)
+        if (!file.exists()) {
+            file.createNewFile()
+        }
+        vcsAutoCommitor.generateChangeLog(versionPropertyFilePath)
+        file.delete()
     }
 }

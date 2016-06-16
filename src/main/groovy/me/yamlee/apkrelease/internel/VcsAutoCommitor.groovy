@@ -1,6 +1,5 @@
 package me.yamlee.apkrelease.internel
 
-import com.android.build.gradle.AppPlugin
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Project
 
@@ -12,6 +11,7 @@ class VcsAutoCommitor {
 
     public static final String VERSION_CODE_KEY = "VERSION_CODE"
     public static final String VERSION_NAME_PATCH_KEY = "VERSION_NAME_PATCH"
+    public static final String LAST_COMMIT_RECORD_KEY = "LAST_COMMIT_RECORD"
 
     def commitBuildMsg(Project project) {
         String filePath = project.getRootDir() + File.separator + "release.properties"
@@ -48,12 +48,23 @@ class VcsAutoCommitor {
         }
     }
 
-    def generateChangeLog() {
+    def generateChangeLog(String propertyFilePath) {
+        FileInputStream fileInputStream = new FileInputStream(propertyFilePath)
+        Properties properties = new Properties()
+        properties.load(fileInputStream)
+        String lastReleaseCommitId = properties.getProperty(LAST_COMMIT_RECORD_KEY)
+
         Grgit git = Grgit.open()
-        def history = git.log {
-            range '00bb7fd', '003bee9'
+        def newestHistory = git.log(maxCommits: 1)
+        String newestReleaseCommitId = newestHistory.id
+        def history
+        if (lastReleaseCommitId == null || lastReleaseCommitId.equals("")) {
+            history = git.log()
+        } else {
+            history = git.log {
+                range lastReleaseCommitId, newestReleaseCommitId
+            }
         }
-//        def history = git.log()
         history.each { commit ->
             println commit.shortMessage
         }
