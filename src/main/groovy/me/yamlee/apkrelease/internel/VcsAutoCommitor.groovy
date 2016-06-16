@@ -14,12 +14,13 @@ class VcsAutoCommitor {
     public static final String VERSION_NAME_PATCH_KEY = "VERSION_NAME_PATCH"
 
     def commitBuildMsg(Project project) {
-        String filePath = project.getRootDir() + File.separator + "version.properties"
+        String filePath = project.getRootDir() + File.separator + "release.properties"
         if (createVersionPropertiesFileIfNotExist(filePath)) {
             versionCodeAdd(filePath)
         }
 
     }
+
 
     def commitToVcs(Project project) {
         Grgit git = Grgit.open()
@@ -34,8 +35,7 @@ class VcsAutoCommitor {
         } else {
             git.checkout(branch: 'ci_branch', createBranch: true)
         }
-        AppPlugin androidPlugin = project.plugins.getPlugin(AppPlugin)
-        def config = androidPlugin.getProperty('defaultConfig')
+        def config = getAndroidConfig(project)
         def commitMsg = "Build version for " + config.versionName + "_" + config.versionCode
         git.commit(message: commitMsg, all: true)
         def history = git.log(maxCommits: 1)
@@ -47,6 +47,23 @@ class VcsAutoCommitor {
             e.printStackTrace()
         }
     }
+
+    def generateChangeLog() {
+        Grgit git = Grgit.open()
+        def history = git.log {
+            range '00bb7fd', '003bee9'
+        }
+//        def history = git.log()
+        history.each { commit ->
+            println commit.shortMessage
+        }
+    }
+
+
+    def getAndroidConfig(Project project) {
+        return project.android.getProperty('defaultConfig')
+    }
+
 
     void versionCodeAdd(String filePath) {
         Properties properties = new Properties()
@@ -80,6 +97,7 @@ class VcsAutoCommitor {
             fos.close()
             fileInputStream.close()
         } catch (IOException e) {
+            e.printStackTrace()
             return false
         }
         return true

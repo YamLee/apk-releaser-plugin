@@ -21,10 +21,10 @@ class VcsAutoCommitorTest {
 
     @Test
     public void testCreatePropertyFileIfNotExist() throws Exception {
-        println filePath
-        vcsAutoCommitor.createVersionPropertiesFileIfNotExist(filePath)
+        println versionPropertyFilePath
+        vcsAutoCommitor.createVersionPropertiesFileIfNotExist(versionPropertyFilePath)
 
-        def file = new File(filePath)
+        def file = new File(versionPropertyFilePath)
         assertThat(file.exists(), is(true))
         file.delete()
     }
@@ -49,5 +49,19 @@ class VcsAutoCommitorTest {
         project.pluginManager.apply 'com.android.application'
         project.pluginManager.apply 'me.yamlee.apkrelease'
         vcsAutoCommitor.commitToVcs(project)
+    }
+
+    @Test
+    public void testGetAndroidConfig() throws Exception {
+        Project project = ProjectBuilder.builder().build()
+        project.pluginManager.apply 'com.android.application'
+        project.pluginManager.apply 'me.yamlee.apkrelease'
+        def androidConfig = vcsAutoCommitor.getAndroidConfig(project)
+        println androidConfig.versionName
+    }
+
+    @Test
+    public void testGenerateChangeLog() throws Exception {
+        vcsAutoCommitor.generateChangeLog()
     }
 }
