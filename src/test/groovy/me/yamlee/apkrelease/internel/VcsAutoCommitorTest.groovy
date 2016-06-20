@@ -3,7 +3,9 @@ package me.yamlee.apkrelease.internel
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 import static org.hamcrest.CoreMatchers.is
 import static org.hamcrest.MatcherAssert.assertThat
@@ -12,9 +14,17 @@ import static org.hamcrest.MatcherAssert.assertThat
 class VcsAutoCommitorTest {
     VcsAutoCommitor vcsAutoCommitor
     String versionPropertyFilePath
+    Project project
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder()
+
 
     @Before
     public void setUp() throws Exception {
+        project = ProjectBuilder.builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         versionPropertyFilePath = System.getProperty("user.dir") + File.separator + "version.properties"
         vcsAutoCommitor = new VcsAutoCommitor()
     }
@@ -48,16 +58,25 @@ class VcsAutoCommitorTest {
         Project project = ProjectBuilder.builder().build()
         project.pluginManager.apply 'com.android.application'
         project.pluginManager.apply 'me.yamlee.apkrelease'
-        vcsAutoCommitor.commitToVcs(project)
+        vcsAutoCommitor.commitMsgToVcs(project)
     }
 
     @Test
     public void testGetAndroidConfig() throws Exception {
-        Project project = ProjectBuilder.builder().build()
-        project.pluginManager.apply 'com.android.application'
-        project.pluginManager.apply 'me.yamlee.apkrelease'
-        def androidConfig = vcsAutoCommitor.getAndroidConfig(project)
-        println androidConfig.versionName
+        project.apply plugin: 'com.android.application'
+        project.android {
+            defaultConfig {
+                defaultConfig {
+                    applicationId "me.yamlee.demo"
+                    minSdkVersion 14
+                    targetSdkVersion 21
+                    versionCode 1
+                    versionName "1.0"
+                }
+            }
+        }
+        def version = vcsAutoCommitor.getApkVersion(project)
+        assertThat(version, is("1.0_1"))
     }
 
     @Test
@@ -69,4 +88,6 @@ class VcsAutoCommitorTest {
         vcsAutoCommitor.generateChangeLog(versionPropertyFilePath)
         file.delete()
     }
+
+
 }

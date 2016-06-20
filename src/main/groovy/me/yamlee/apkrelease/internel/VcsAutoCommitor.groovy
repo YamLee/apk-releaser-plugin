@@ -15,14 +15,22 @@ class VcsAutoCommitor {
 
     def commitBuildMsg(Project project) {
         String filePath = project.getRootDir() + File.separator + "release.properties"
+        String logFilePath = project.getRootDir() + File.separator + "changelog.md"
         if (createVersionPropertiesFileIfNotExist(filePath)) {
             versionCodeAdd(filePath)
+            commitMsgToVcs(project)
         }
-
     }
 
 
-    def commitToVcs(Project project) {
+    def commitMsgToVcs(Project project) {
+        String version = getApkVersion(project)
+        def commitMsg = "Build version for " + version
+
+        String propertyPath = project.getRootDir() + File.separator + "release.properties"
+        String logFilePath = project.getRootDir() + File.separator + "changelog.md"
+        generateChangeLog(logFilePath, propertyPath, version)
+
         Grgit git = Grgit.open()
         def branches = git.branch.list()
         List<String> branchNames = new ArrayList<>()
@@ -35,8 +43,6 @@ class VcsAutoCommitor {
         } else {
             git.checkout(branch: 'ci_branch', createBranch: true)
         }
-        def config = getAndroidConfig(project)
-        def commitMsg = "Build version for " + config.versionName + "_" + config.versionCode
         git.commit(message: commitMsg, all: true)
         def history = git.log(maxCommits: 1)
         git.tag.add(name: 'v' + config.versionName + "_" + config.versionCode, message: history.get(0).shortMessage)
@@ -48,7 +54,12 @@ class VcsAutoCommitor {
         }
     }
 
-    def generateChangeLog(String propertyFilePath) {
+    def String getApkVersion(Project project) {
+        def config = project.android.getProperty('defaultConfig')
+        return config.versionName + "_" + config.versionCode
+    }
+
+    def generateChangeLog(String changelogFilePath, String propertyFilePath, String version) {
         FileInputStream fileInputStream = new FileInputStream(propertyFilePath)
         Properties properties = new Properties()
         properties.load(fileInputStream)
@@ -65,14 +76,33 @@ class VcsAutoCommitor {
                 range lastReleaseCommitId, newestReleaseCommitId
             }
         }
+        def index = 1
+        StringBuilder stringBuilder = new StringBuilder(version)
         history.each { commit ->
-            println commit.shortMessage
+            def log = "${index}. ${commit.shortMessage}"
+            println log
+            if (log.startsWith("*")) {
+                stringBuilder.append("\n")
+                stringBuilder.append(log)
+            }
+            index++
         }
+        writeChangeLog(changelogFilePath, stringBuilder)
     }
 
-
-    def getAndroidConfig(Project project) {
-        return project.android.getProperty('defaultConfig')
+    def writeChangeLog(String changelogFilePath, StringBuilder stringBuilder) {
+        try {
+            File file = new File(changelogFilePath)
+            if (!file.exists() && !file.isDirectory()) {
+                file.createNewFile()
+            }
+            FileWriter fileWriter = new FileWriter(file, true)
+            fileWriter.write("\n")
+            fileWriter.write(stringBuilder.toString())
+            fileWriter.close()
+        } catch (IOException e) {
+            e.printStackTrace()
+        }
     }
 
 
