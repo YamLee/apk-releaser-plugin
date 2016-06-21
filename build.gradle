@@ -24,6 +24,7 @@ dependencies {
     compile localGroovy()
     compile 'com.android.tools.build:gradle:1.5.0'
     compile 'org.ajoberstar:gradle-git:1.4.2'
+    compile 'org.quanqi:pgyer:0.1.2'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
 
