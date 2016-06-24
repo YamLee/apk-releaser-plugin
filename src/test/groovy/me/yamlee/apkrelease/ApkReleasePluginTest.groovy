@@ -34,7 +34,7 @@ class ApkReleasePluginTest {
     @Test
     public void testApkReleasePlugin() throws Exception {
         project.apply plugin: 'me.yamlee.apkrelease'
-        project.apkDistribute {
+        project.apkRelease.apkDistribute {
             preview {
                 pgyerApiKey = "fb914b7d5b72fc11622cafaa3dfb183f"
                 pgyerUserKey = "ebdbfa7770bec238a0e9770e79459210"

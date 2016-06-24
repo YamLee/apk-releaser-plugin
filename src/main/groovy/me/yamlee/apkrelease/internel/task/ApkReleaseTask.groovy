@@ -1,4 +1,4 @@
-package me.yamlee.apkrelease.internel
+package me.yamlee.apkrelease.internel.task
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
@@ -29,7 +29,15 @@ class ApkReleaseTask extends DefaultTask {
                     _api_key = pgyerApiKey
                     uKey = pgyerUserKey
                 }
-
+                project.apks {
+                    distribute {
+                        sourceFile = project.file(project.extensions.ext.apkFilePath)
+                    }
+                }
+                def renameTask = project.task("renameApk", type: ApkRenameTask)
+                renameTask.getActions().get(0).execute(renameTask)
+                def uploadTask = project.tasks.findByName("uploadPgyerDistribute")
+                uploadTask.getActions().get(0).execute(uploadTask)
             }
         }
 
