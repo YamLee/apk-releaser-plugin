@@ -14,12 +14,23 @@ class ApkReleaseTask extends DefaultTask {
 
     @TaskAction
     def runTask() {
-        def items = project.apkRelease.releaseTargets
+        def items = project.apkRelease.distributeTargets
         for (target in items) {
-            String pgyerApiKey = target.pgyerApiKey
-            String pgyerUserKey = target.pgyerUserKey
-            LOG.info("$buildFlavorName pgyerApiKey is $pgyerApiKey")
-            LOG.info("$buildFlavorName pgyerUserKey is $pgyerUserKey")
+            String targetName = target.name
+            if (targetName.equalsIgnoreCase(buildFlavorName)) {
+                String pgyerApiKey = target.pgyerApiKey
+                String pgyerUserKey = target.pgyerUserKey
+                LOG.info("$buildFlavorName pgyerApiKey is ${pgyerApiKey}")
+                println("$buildFlavorName pgyerApiKey is $pgyerApiKey")
+                LOG.info("$buildFlavorName pgyerUserKey is $pgyerUserKey")
+                println("$buildFlavorName pgyerUserKey is $pgyerUserKey")
+                project.apply plugin: 'org.quanqi.pgyer'
+                project.pgyer {
+                    _api_key = pgyerApiKey
+                    uKey = pgyerUserKey
+                }
+
+            }
         }
 
     }

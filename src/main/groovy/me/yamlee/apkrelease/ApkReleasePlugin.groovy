@@ -5,7 +5,6 @@ import me.yamlee.apkrelease.internel.ReleaseTarget
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.quanqi.pgyer.gradle.plugins.ApkTarget
 
 /**
  *
@@ -28,6 +27,7 @@ class ApkReleasePlugin implements Plugin<Project> {
             project.extensions.create(buildFlavorName, ReleaseTarget, formatName)
         }
         def apkReleaseExtension = new ApkReleaseExtension(item)
+        project.convention.plugins.deploygate = apkDistribute
         project.extensions.apkRelease = apkReleaseExtension
 //        project.extensions.create("apkRelease", ApkReleaseExtension)
     }

@@ -8,13 +8,13 @@ import org.gradle.api.NamedDomainObjectContainer
  * Created by yamlee on 6/15/16.
  */
 class ApkReleaseExtension {
-    final private NamedDomainObjectContainer<ReleaseTarget> releaseTargets
+    final private NamedDomainObjectContainer<ReleaseTarget> distributeTargets
 
-    ApkReleaseExtension(NamedDomainObjectContainer<ReleaseTarget> releaseTargets) {
-        this.releaseTargets = releaseTargets
+    ApkReleaseExtension(NamedDomainObjectContainer<ReleaseTarget> distributeTargets) {
+        this.distributeTargets = distributeTargets
     }
 
-    public item(Closure closure) {
-        releaseTargets.configure(closure)
+    public apkDistribute(Closure closure) {
+        distributeTargets.configure(closure)
     }
 }
