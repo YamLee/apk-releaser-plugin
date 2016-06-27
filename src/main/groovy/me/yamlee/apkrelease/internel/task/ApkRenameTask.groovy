@@ -9,6 +9,7 @@ import org.gradle.api.tasks.TaskAction
 class ApkRenameTask extends DefaultTask {
     @TaskAction
     def runTask() {
+        println("rename apk file task running")
         //重命名apk包
         project.android.applicationVariants.all { variant ->
             //check if staging variant

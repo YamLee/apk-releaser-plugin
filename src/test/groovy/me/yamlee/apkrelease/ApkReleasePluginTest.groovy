@@ -34,19 +34,62 @@ class ApkReleasePluginTest {
     @Test
     public void testApkReleasePlugin() throws Exception {
         project.apply plugin: 'me.yamlee.apkrelease'
+        project.apply plugin: 'com.android.application'
+
+        project.android {
+            buildToolsVersion '23.0.2'
+
+            //     <!-- 解决Android L上通知显示异常问题，targetSdkVersion需要设置成22 -->
+            defaultConfig {
+                applicationId "in.haojin.nearbymerchant"
+                versionCode 100
+                versionName "1.9.0"
+                // Enabling multidex support.
+                multiDexEnabled true
+
+            }
+
+            buildTypes {
+
+                release {
+                    minifyEnabled true
+                    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                    debuggable false;
+                    zipAlignEnabled true
+                }
+
+                debug {
+                    minifyEnabled false
+                    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                    debuggable true;
+                }
+            }
+
+            defaultConfig {
+                testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+            }
+
+            productFlavors {
+
+                haojin {
+                    manifestPlaceholders = [channelName: "haojin", isFirstLauncher: "false"]
+                }
+            }
+        }
+
         project.apkRelease.apkDistribute {
-            preview {
+            haojin {
                 pgyerApiKey = "fb914b7d5b72fc11622cafaa3dfb183f"
                 pgyerUserKey = "ebdbfa7770bec238a0e9770e79459210"
             }
-            test {
+            release {
                 pgyerApiKey = "3d109b16b9b16a8442eb601956c8f8af"
                 pgyerUserKey = "9f7e464c5841eed38ef33709d5f8cd8a"
             }
         }
 
 
-        def task = project.tasks.findByName("apkReleasePreview")
+        def task = project.tasks.findByName("apkReleaseHaojin")
         task.getActions().get(0).execute(task)
     }
 

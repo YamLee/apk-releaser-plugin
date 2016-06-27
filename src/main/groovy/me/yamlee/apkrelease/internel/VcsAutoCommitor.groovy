@@ -13,7 +13,7 @@ class VcsAutoCommitor {
     public static final String VERSION_NAME_PATCH_KEY = "VERSION_NAME_PATCH"
     public static final String LAST_COMMIT_RECORD_KEY = "LAST_COMMIT_RECORD"
 
-    def commitBuildMsg(Project project) {
+    def run(Project project) {
         String filePath = project.getRootDir() + File.separator + "release.properties"
         String logFilePath = project.getRootDir() + File.separator + "changelog.md"
         if (createVersionPropertiesFileIfNotExist(filePath)) {

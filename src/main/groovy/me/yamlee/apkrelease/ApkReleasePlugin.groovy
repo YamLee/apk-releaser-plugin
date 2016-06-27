@@ -3,6 +3,7 @@ package me.yamlee.apkrelease
 import me.yamlee.apkrelease.internel.task.ApkReleaseTask
 import me.yamlee.apkrelease.internel.ReleaseTarget
 import org.apache.commons.lang.WordUtils
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -20,10 +21,7 @@ class ApkReleasePlugin implements Plugin<Project> {
             releaseTask.group = 'apkRelease'
             releaseTask.description = 'release apk with auto commit msg to git and upload apk to pgyer'
             releaseTask.buildFlavorName = buildFlavorName
-            def buildFavorTargetTask = project.tasks.findByName("assemble${formatName}")
-            if (buildFavorTargetTask != null) {
-                releaseTask.dependsOn buildFavorTargetTask
-            }
+
             project.extensions.create(buildFlavorName, ReleaseTarget, formatName)
         }
         def apkReleaseExtension = new ApkReleaseExtension(item)
