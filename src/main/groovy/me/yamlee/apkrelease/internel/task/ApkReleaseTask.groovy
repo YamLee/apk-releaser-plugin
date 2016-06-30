@@ -1,5 +1,6 @@
 package me.yamlee.apkrelease.internel.task
 
+import groovy.io.FileType
 import me.yamlee.apkrelease.internel.VcsAutoCommitor
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.DefaultTask
@@ -24,11 +25,34 @@ class ApkReleaseTask extends DefaultTask {
         }
 
         //1. Rename apk file and this task depends on android assemble task
+//        buildFavorTargetTask.getActions().get(0).execute(buildFavorTargetTask)
         def renameTask = project.task("renameApk", type: ApkRenameTask)
         renameTask.dependsOn buildFavorTargetTask
-        renameTask.getActions().get(0).execute(renameTask)
+        renameTask.execute()
+//        renameTask.getActions().get(0).execute(renameTask)
 
-        //2.Upload apk file to pgyer
+        String apkFilePath
+        if (project.extensions.extraProperties.has("apkFilePath")) {
+            apkFilePath = project.extensions.ext.apkFilePath
+        }
+        File apkFile
+        if (apkFilePath != null && apkFilePath != "") {
+            apkFile = new File(apkFilePath)
+        }
+        if (apkFile == null || !apkFile.exists()) {
+            File apkFileDir = project.file("$project.buildDir/apks")
+            if (apkFileDir != null && apkFileDir.exists()) {
+                apkFileDir.eachFileRecurse(FileType.FILES) { file ->
+                    if (file.absolutePath.contains(buildFlavorName)) {
+                        apkFile = file
+                    }
+                }
+            }
+        }
+        if (apkFile == null || !apkFile.exists()) {
+            throw new GradleException("could not find apk file")
+        }
+        //3.Upload apk file to pgyer
         def items = project.apkRelease.distributeTargets
         for (target in items) {
             String targetName = target.name
@@ -46,11 +70,12 @@ class ApkReleaseTask extends DefaultTask {
                 }
                 project.apks {
                     distribute {
-                        sourceFile = project.file(project.extensions.ext.apkFilePath)
+                        sourceFile = apkFile
                     }
                 }
-                def uploadTask = project.tasks.findByName("uploadPgyerDistribute")
-                uploadTask.getActions().get(0).execute(uploadTask)
+                def uploadTask = project.tasks.findByName("uploadPgyer")
+                uploadTask.execute()
+//                uploadTask.getActions().get(0).execute(uploadTask)
             }
         }
         //3.Commit msg to version control system

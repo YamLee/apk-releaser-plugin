@@ -33,8 +33,8 @@ class ApkReleasePluginTest {
 
     @Test
     public void testApkReleasePlugin() throws Exception {
-        project.apply plugin: 'me.yamlee.apkrelease'
         project.apply plugin: 'com.android.application'
+        project.apply plugin: 'me.yamlee.apkrelease'
 
         project.android {
             buildToolsVersion '23.0.2'
@@ -90,7 +90,7 @@ class ApkReleasePluginTest {
 
 
         def task = project.tasks.findByName("apkReleaseHaojin")
-        task.getActions().get(0).execute(task)
+        task.execute()
     }
 
     @Test

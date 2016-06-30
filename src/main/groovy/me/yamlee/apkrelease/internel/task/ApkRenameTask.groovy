@@ -14,7 +14,7 @@ class ApkRenameTask extends DefaultTask {
         project.android.applicationVariants.all { variant ->
             //check if staging variant
             println "--------------------------------" + variant.name
-            def defaultConfig = android.defaultConfig
+            def defaultConfig = project.android.defaultConfig
             variant.outputs.each { output ->
                 File file = output.outputFile
                 String fileName = "Near_Merchant_v" + defaultConfig.versionName + "_" + variant.name + "_build" + defaultConfig.versionCode + ".apk"
