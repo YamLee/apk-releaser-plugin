@@ -40,10 +40,10 @@ class ApkReleaseTask extends DefaultTask {
             apkFile = new File(apkFilePath)
         }
         if (apkFile == null || !apkFile.exists()) {
-            File apkFileDir = project.file("$project.buildDir/apks")
+            File apkFileDir = project.file("$project.buildDir/outputs/apk")
             if (apkFileDir != null && apkFileDir.exists()) {
                 apkFileDir.eachFileRecurse(FileType.FILES) { file ->
-                    if (file.absolutePath.contains(buildFlavorName)) {
+                    if (file.absolutePath.contains("build")) {
                         apkFile = file
                     }
                 }
