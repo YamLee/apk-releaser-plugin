@@ -16,6 +16,8 @@ class ApkReleaseTask extends DefaultTask {
     private static final Logger LOG = Logging.getLogger(ApkReleaseTask.class);
     String buildFlavorName
 
+
+
     @TaskAction
     def runTask() {
         String formatName = WordUtils.capitalize(buildFlavorName)
@@ -26,7 +28,7 @@ class ApkReleaseTask extends DefaultTask {
 
         //1. Rename apk file and this task depends on android assemble task
 //        buildFavorTargetTask.getActions().get(0).execute(buildFavorTargetTask)
-        def renameTask = project.task("renameApk", type: ApkRenameTask)
+        def renameTask = project.task("renameApk", type: ApkRenameTask,dependsOn:"assemble${formatName}")
         renameTask.dependsOn buildFavorTargetTask
         renameTask.execute()
 //        renameTask.getActions().get(0).execute(renameTask)
