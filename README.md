@@ -37,8 +37,10 @@ apply plugin: "me.yamlee.apkrelease"
 
 ## 多渠道打包获取渠道名称方法
 
+由于多渠道打包采用一种特殊的方法所以获取渠道信息不同于以往方法
+
 ```java
-public static String readChannelFromApkMetaInfo(Context context) {
+public static String getChannel(Context context) {
     String channel = null;
     String sourceDir = context.getApplicationInfo().sourceDir;
     final String start_flag = "META-INF/channel_";
