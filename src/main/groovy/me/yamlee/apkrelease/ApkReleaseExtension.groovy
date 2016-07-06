@@ -1,6 +1,6 @@
 package me.yamlee.apkrelease
 
-import me.yamlee.apkrelease.internel.ReleaseTarget
+import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import org.gradle.api.NamedDomainObjectContainer
 
 /**

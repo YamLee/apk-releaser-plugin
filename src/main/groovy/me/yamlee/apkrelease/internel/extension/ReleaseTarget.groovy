@@ -1,4 +1,4 @@
-package me.yamlee.apkrelease.internel
+package me.yamlee.apkrelease.internel.extension
 
 import org.gradle.api.Named
 import org.gradle.api.internal.project.ProjectInternal

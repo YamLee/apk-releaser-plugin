@@ -1,9 +1,8 @@
 package me.yamlee.apkrelease
 
 import me.yamlee.apkrelease.internel.task.ApkReleaseTask
-import me.yamlee.apkrelease.internel.ReleaseTarget
+import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import org.apache.commons.lang.WordUtils
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
