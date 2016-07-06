@@ -1,5 +1,7 @@
-package me.yamlee.apkrelease;
+package me.yamlee.apkrelease.internel;
 
+import me.yamlee.apkrelease.ReleaseJob;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import java.io.*;
@@ -9,32 +11,43 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
-class ChannelApkGenerator implements ReleaseJob{
+public class ChannelApkGenerator implements ReleaseJob {
     private static final String CHANNEL_PREFIX = "/META-INF/";
-    private static final String CHANNEL_FILE_NAME = "channels.txt";
+    private static final String CHANNEL_FILE_NAME = "channels.properties";
     private static final String FILE_NAME_CONNECTOR = "-";
     private static final String CHANNEL_FLAG = "channel_";
 
     @Override
     public void execute(Project project) {
-
-        String channelPath = project.getRootDir().getAbsolutePath() + File.separator + "channels.properties"
-        File channelFile = new File(channelPath)
+        String channelPath = project.getRootDir().getAbsolutePath() + File.separator + CHANNEL_FILE_NAME;
+        File channelFile = new File(channelPath);
         if (!channelFile.exists()) {
-            channelFile.createNewFile()
+            try {
+                channelFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        Properties properties = new Properties()
-        FileInputStream fileInputStream = new FileInputStream(channelPath)
-        InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream)
-        properties.load(inputStreamReader)
-        Set<Object> keys = properties.keySet();//返回属性key的集合
-        List<String> channelList = new ArrayList<>()
-        for(Object key:keys){
-            println("key:"+key.toString()+",value:"+properties.get(key));
-            channelList.add(key.toString())
+        Properties properties = new Properties();
+        FileInputStream fileInputStream = null ;
+        try {
+            fileInputStream = new FileInputStream(channelPath);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            properties.load(inputStreamReader);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        final String apkFilePath ="file path";
+        Set<Object> keys = properties.keySet();//返回属性key的集合
+        List<String> channelList = new ArrayList<>();
+        for (Object key : keys) {
+            System.out.println("key:" + key.toString() + ",value:" + properties.get(key));
+            channelList.add(key.toString());
+        }
+
+        final String apkFilePath = project.getRootDir().getAbsolutePath() + File.separator + "test.apk";
         File apkFile = new File(apkFilePath);
         if (!apkFile.exists()) {
             System.out.println("找不到文件：" + apkFile.getPath());
@@ -48,13 +61,13 @@ class ChannelApkGenerator implements ReleaseJob{
             e.printStackTrace();
             return;
         }
-        if(existChannel != null){
+        if (existChannel != null) {
             System.out.println("此安装包已存在渠道号：" + existChannel + "，请使用原始包");
             return;
         }
 
         String parentDirPath = apkFile.getParent();
-        if(parentDirPath == null){
+        if (parentDirPath == null) {
             System.out.println("请输入完整的文件路径：" + apkFile.getPath());
             return;
         }
@@ -72,9 +85,9 @@ class ChannelApkGenerator implements ReleaseJob{
         }
 
 //        LinkedList<String> channelList = getChannelList(new File(apkFile.getParentFile(), CHANNEL_FILE_NAME));
-        if(channelList == null){
-            return;
-        }
+//        if (channelList == null) {
+//            return;
+//        }
 
         for (String channel : channelList) {
             String newApkPath = parentDirPath + File.separator + fileNamePrefix + FILE_NAME_CONNECTOR + channel + fileNameSurfix;
@@ -84,64 +97,19 @@ class ChannelApkGenerator implements ReleaseJob{
                 e.printStackTrace();
                 break;
             }
-            if(!changeChannel(newApkPath, CHANNEL_FLAG + channel)){
+            if (!changeChannel(newApkPath, CHANNEL_FLAG + channel)) {
                 break;
             }
         }
     }
 
-
-    /**
-     * 读取渠道列表
-     */
-    private static LinkedList<String> getChannelList(File channelListFile) {
-        if (!channelListFile.exists()) {
-            System.out.println("找不到渠道配置文件：" + channelListFile.getPath());
-            return null;
-        }
-
-        if (!channelListFile.isFile()) {
-            System.out.println("这不是一个文件：" + channelListFile.getPath());
-            return null;
-        }
-
-        LinkedList<String> channelList = null;
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(channelListFile), "UTF-8"));
-            String lineTxt;
-            while ((lineTxt = reader.readLine()) != null) {
-                lineTxt = lineTxt.trim();
-                if (lineTxt.length() > 0) {
-                    if (channelList == null) {
-                        channelList = new LinkedList<>();
-                    }
-                    channelList.add(lineTxt);
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("读取渠道配置文件失败：" + channelListFile.getPath());
-            e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return channelList;
-    }
-
     /**
      * 复制文件
      */
-    private static void copyFile(final String sourceFilePath, final String targetFilePath) throws IOException {
+    private void copyFile(final String sourceFilePath, final String targetFilePath) throws IOException {
         File sourceFile = new File(sourceFilePath);
         File targetFile = new File(targetFilePath);
-        if(targetFile.exists()){
+        if (targetFile.exists()) {
             //noinspection ResultOfMethodCallIgnored
             targetFile.delete();
         }
@@ -160,10 +128,10 @@ class ChannelApkGenerator implements ReleaseJob{
             System.out.println("复制文件失败：" + targetFilePath);
             e.printStackTrace();
         } finally {
-            if (inputStream != null){
+            if (inputStream != null) {
                 inputStream.close();
             }
-            if (outputStream != null){
+            if (outputStream != null) {
                 outputStream.flush();
                 outputStream.close();
             }
@@ -173,18 +141,15 @@ class ChannelApkGenerator implements ReleaseJob{
     /**
      * 添加渠道号，原理是在apk的META-INF下新建一个文件名为渠道号的文件
      */
-    private static boolean changeChannel(final String newApkFilePath, final String channel) {
-        try {
-            FileSystem fileSystem = createZipFileSystem(newApkFilePath, false)
+    private boolean changeChannel(final String newApkFilePath, final String channel) {
+        try (FileSystem fileSystem = createZipFileSystem(newApkFilePath, false)){
             final Path root = fileSystem.getPath(CHANNEL_PREFIX);
             ChannelFileVisitor visitor = new ChannelFileVisitor();
             try {
                 Files.walkFileTree(root, visitor);
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("添加渠道号失败：" + channel);
-                e.printStackTrace();
-                return false;
+                throw new GradleException("添加渠道号失败: $channel");
             }
 
             Path existChannel = visitor.getChannelFile();
@@ -202,7 +167,7 @@ class ChannelApkGenerator implements ReleaseJob{
                 return false;
             }
 
-            System.out.println("添加渠道号成功：" + channel+", NewFilePath：" + newApkFilePath);
+            System.out.println("添加渠道号成功：" + channel + ", NewFilePath：" + newApkFilePath);
             return true;
         } catch (IOException e) {
             System.out.println("添加渠道号失败：" + channel);
@@ -211,7 +176,7 @@ class ChannelApkGenerator implements ReleaseJob{
         }
     }
 
-    private static FileSystem createZipFileSystem(String zipFilename, boolean create) throws IOException {
+    private FileSystem createZipFileSystem(String zipFilename, boolean create) throws IOException {
         final Path path = Paths.get(zipFilename);
         final URI uri = URI.create("jar:file:" + path.toUri().getPath());
 
@@ -221,7 +186,6 @@ class ChannelApkGenerator implements ReleaseJob{
         }
         return FileSystems.newFileSystem(uri, env);
     }
-
 
 
     private static class ChannelFileVisitor extends SimpleFileVisitor<Path> {
@@ -242,7 +206,7 @@ class ChannelApkGenerator implements ReleaseJob{
         }
     }
 
-    private static String readChannel(File apkFile) throws IOException {
+    String readChannel(File apkFile) throws IOException {
         FileSystem zipFileSystem;
         try {
             zipFileSystem = createZipFileSystem(apkFile.getPath(), false);
