@@ -16,6 +16,11 @@ public class ChannelApkGenerator implements ReleaseJob {
     private static final String CHANNEL_FILE_NAME = "channels.properties";
     private static final String FILE_NAME_CONNECTOR = "-";
     private static final String CHANNEL_FLAG = "channel_";
+    private String apkFilePath;
+
+    public ChannelApkGenerator(String apkFilePath) {
+        this.apkFilePath = apkFilePath;
+    }
 
     @Override
     public void execute(Project project) {
@@ -47,7 +52,6 @@ public class ChannelApkGenerator implements ReleaseJob {
             channelList.add(key.toString());
         }
 
-        final String apkFilePath = project.getRootDir().getAbsolutePath() + File.separator + "test.apk";
         File apkFile = new File(apkFilePath);
         if (!apkFile.exists()) {
             System.out.println("找不到文件：" + apkFile.getPath());

@@ -1,12 +1,14 @@
 package me.yamlee.apkrelease.internel.task
 
 import groovy.io.FileType
+import me.yamlee.apkrelease.internel.ApkFileResolver
 import me.yamlee.apkrelease.internel.VcsAutoCommitor
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -15,7 +17,6 @@ import org.gradle.api.tasks.TaskAction
 class ApkReleaseTask extends DefaultTask {
     private static final Logger LOG = Logging.getLogger(ApkReleaseTask.class);
     String buildFlavorName
-
 
 
     @TaskAction
@@ -28,32 +29,21 @@ class ApkReleaseTask extends DefaultTask {
 
         //1. Rename apk file and this task depends on android assemble task
 //        buildFavorTargetTask.getActions().get(0).execute(buildFavorTargetTask)
-        def renameTask = project.task("renameApk", type: ApkRenameTask,dependsOn:"assemble${formatName}")
-        renameTask.dependsOn buildFavorTargetTask
+        def renameTask = project.task("renameApk", type: ApkRenameTask, dependsOn: "assemble${formatName}")
         renameTask.execute()
-//        renameTask.getActions().get(0).execute(renameTask)
 
-        String apkFilePath
-        if (project.extensions.extraProperties.has("apkFilePath")) {
-            apkFilePath = project.extensions.ext.apkFilePath
-        }
-        File apkFile
-        if (apkFilePath != null && apkFilePath != "") {
-            apkFile = new File(apkFilePath)
-        }
-        if (apkFile == null || !apkFile.exists()) {
-            File apkFileDir = project.file("$project.buildDir/outputs/apk")
-            if (apkFileDir != null && apkFileDir.exists()) {
-                apkFileDir.eachFileRecurse(FileType.FILES) { file ->
-                    if (file.absolutePath.contains("build")) {
-                        apkFile = file
-                    }
-                }
+        //2.Find target apk file
+        File apkFile = null
+        List<File> apkFiles = ApkFileResolver.getApkFiles(project)
+        apkFiles.each { File file ->
+            if (file.getName().equalsIgnoreCase(buildFlavorName)) {
+                apkFile = file
             }
         }
-        if (apkFile == null || !apkFile.exists()) {
-            throw new GradleException("could not find apk file")
+        if (apkFile == null) {
+            throw new StopExecutionException("Can not upload apk file to pgyer because can not find target apk file")
         }
+
         //3.Upload apk file to pgyer
         def items = project.apkRelease.distributeTargets
         for (target in items) {

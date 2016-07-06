@@ -9,6 +9,7 @@ import org.gradle.api.NamedDomainObjectContainer
  */
 class ApkReleaseExtension {
     final private NamedDomainObjectContainer<ReleaseTarget> distributeTargets
+    String channelPackageOriginApkPath
 
     ApkReleaseExtension(NamedDomainObjectContainer<ReleaseTarget> distributeTargets) {
         this.distributeTargets = distributeTargets
