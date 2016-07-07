@@ -89,7 +89,7 @@ class ApkReleasePluginTest {
         }
 
 
-        def task = project.tasks.findByName("apkReleaseHaojin")
+        def task = project.tasks.findByName("apkDistHaojin")
         task.execute()
     }
 

@@ -11,14 +11,14 @@ import org.gradle.api.tasks.TaskAction
  * Created by yamlee on 6/21/16.
  */
 class ChannelPackageTask extends DefaultTask {
-    private static final Logger LOG = Logging.getLogger(ChannelPackageTask.class);
+    private static final Logger log = Logging.getLogger(ChannelPackageTask.class);
     String buildFlavorName
 
 
 
     @TaskAction
     def runTask() {
-        LOG.i("run channel package task")
+        log.info("run channel package task")
         List<File> apkFiles = ApkFileResolver.getApkFiles(project)
         File targetFile = null
         apkFiles.each { File file ->

@@ -1,6 +1,5 @@
 package me.yamlee.apkrelease.internel.task
 
-import groovy.io.FileType
 import me.yamlee.apkrelease.internel.ApkFileResolver
 import me.yamlee.apkrelease.internel.VcsAutoCommitor
 import org.apache.commons.lang.WordUtils
@@ -71,7 +70,7 @@ class ApkReleaseTask extends DefaultTask {
             }
         }
         //3.Commit msg to version control system
-//        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor()
-//        vcsAutoCommitor.run(project)
+        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor()
+        vcsAutoCommitor.run(project)
     }
 }
