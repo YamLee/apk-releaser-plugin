@@ -14,9 +14,24 @@ import sun.rmi.runtime.Log
 class VcsAutoCommitor {
     private static final Logger LOG = Logging.getLogger(VcsAutoCommitor.class);
 
+    /**
+     * apk build number
+     */
     public static final String VERSION_CODE_KEY = "VERSION_CODE"
+    /**
+     * apk version last patch name
+     */
     public static final String VERSION_NAME_PATCH_KEY = "VERSION_NAME_PATCH"
+    /**
+     * the last git commit SHA id
+     */
     public static final String LAST_COMMIT_RECORD_KEY = "LAST_COMMIT_RECORD"
+
+    VcsOperator vcsOperator
+
+    VcsAutoCommitor(VcsOperator vcsOperator) {
+        this.vcsOperator = vcsOperator
+    }
 
     def run(Project project) {
         String filePath = project.getRootDir() + File.separator + "release.properties"
@@ -35,25 +50,19 @@ class VcsAutoCommitor {
         String propertyPath = project.getRootDir() + File.separator + "release.properties"
         String logFilePath = project.getRootDir() + File.separator + "changelog.md"
         generateChangeLog(logFilePath, propertyPath, version)
-
-        Grgit git = Grgit.open()
-        def branches = git.branch.list()
-        List<String> branchNames = new ArrayList<>()
-        branches.each {
-            println it.name
-            branchNames.add(it.name)
-        }
+        List<String> branchNames = vcsOperator.branchList()
         if (branchNames.contains("ci_branch")) {
-            git.checkout(branch: 'ci_branch', createBranch: false)
+            vcsOperator.checkOut("ci_branch",false)
         } else {
-            git.checkout(branch: 'ci_branch', createBranch: true)
+            vcsOperator.checkOut("ci_branch",true)
         }
-        git.commit(message: commitMsg, all: true)
-        def history = git.log(maxCommits: 1)
-        git.tag.add(name: 'v' + config.versionName + "_" + config.versionCode, message: history.get(0).shortMessage)
+        vcsOperator.commit(commitMsg)
+
+        String lastCommitMsg = vcsOperator.log(1).get(0)
+        vcsOperator.addTag("v${config.versionName}_${config.versionCode}",lastCommitMsg)
         try {
-            git.push(all: true)
-            git.push(tags: true)
+            vcsOperator.push()
+            vcsOperator.pushTags()
         } catch (Exception e) {
             e.printStackTrace()
         }
