@@ -24,7 +24,7 @@ class ApkReleasePlugin implements Plugin<Project> {
     void apply(Project project) {
         if (!hasAndroidPlugin(project)) {
             throw new StopExecutionException(
-                    "Must be applied after 'android' or 'android-library' plugin.")
+                    "ApkRelease plugin must be applied after 'android' or 'android-library' plugin.")
         }
 
         log.info("rename apk file configure")

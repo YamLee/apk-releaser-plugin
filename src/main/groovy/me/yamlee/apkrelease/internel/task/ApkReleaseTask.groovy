@@ -1,13 +1,9 @@
 package me.yamlee.apkrelease.internel.task
 
-import me.yamlee.apkrelease.internel.ApkFileResolver
-import me.yamlee.apkrelease.internel.VcsAutoCommitor
-import org.apache.commons.lang.WordUtils
+import me.yamlee.apkrelease.ReleaseJobManager
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -20,57 +16,8 @@ class ApkReleaseTask extends DefaultTask {
 
     @TaskAction
     def runTask() {
-        String formatName = WordUtils.capitalize(buildFlavorName)
-        def buildFavorTargetTask = project.tasks.findByName("assemble${formatName}")
-        if (buildFavorTargetTask == null) {
-            throw new GradleException("android task \"assemble$formatName\" not found")
-        }
-
-        //1. Rename apk file and this task depends on android assemble task
-//        buildFavorTargetTask.getActions().get(0).execute(buildFavorTargetTask)
-        def renameTask = project.task("renameApk", type: ApkRenameTask, dependsOn: "assemble${formatName}")
-        renameTask.execute()
-
-        //2.Find target apk file
-        File apkFile = null
-        List<File> apkFiles = ApkFileResolver.getApkFiles(project)
-        apkFiles.each { File file ->
-            if (file.getName().equalsIgnoreCase(buildFlavorName)) {
-                apkFile = file
-            }
-        }
-        if (apkFile == null) {
-            throw new StopExecutionException("Can not upload apk file to pgyer because can not find target apk file")
-        }
-
-        //3.Upload apk file to pgyer
-        def items = project.apkRelease.distributeTargets
-        for (target in items) {
-            String targetName = target.name
-            if (targetName.equalsIgnoreCase(buildFlavorName)) {
-                String pgyerApiKey = target.pgyerApiKey
-                String pgyerUserKey = target.pgyerUserKey
-                LOG.info("$buildFlavorName pgyerApiKey is ${pgyerApiKey}")
-                println("$buildFlavorName pgyerApiKey is $pgyerApiKey")
-                LOG.info("$buildFlavorName pgyerUserKey is $pgyerUserKey")
-                println("$buildFlavorName pgyerUserKey is $pgyerUserKey")
-                project.apply plugin: 'org.quanqi.pgyer'
-                project.pgyer {
-                    _api_key = pgyerApiKey
-                    uKey = pgyerUserKey
-                }
-                project.apks {
-                    distribute {
-                        sourceFile = apkFile
-                    }
-                }
-                def uploadTask = project.tasks.findByName("uploadPgyer")
-                uploadTask.execute()
-//                uploadTask.getActions().get(0).execute(uploadTask)
-            }
-        }
-        //3.Commit msg to version control system
-        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor()
-        vcsAutoCommitor.run(project)
+        LOG.lifecycle("Execute for entire release job")
+        ReleaseJobManager manager = new ReleaseJobManager(project)
+        manager.run(buildFlavorName)
     }
 }

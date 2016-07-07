@@ -1,6 +1,7 @@
 package me.yamlee.apkrelease.internel.task
 
 import me.yamlee.apkrelease.internel.ApkFileResolver
+import me.yamlee.apkrelease.internel.iml.ApkFileResolverIml
 import me.yamlee.apkrelease.internel.ChannelApkGenerator
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
@@ -19,10 +20,11 @@ class ChannelPackageTask extends DefaultTask {
     @TaskAction
     def runTask() {
         log.info("run channel package task")
-        List<File> apkFiles = ApkFileResolver.getApkFiles(project)
+        ApkFileResolver apkFileResolver = new ApkFileResolverIml()
+        List<File> apkFiles = apkFileResolver.getApkFiles(project)
         File targetFile = null
         apkFiles.each { File file ->
-            if (file.absolutePath.equalsIgnoreCase(buildFlavorName)) {
+            if (file.absolutePath.contains(buildFlavorName)) {
                 targetFile = file
             }
         }
