@@ -1,8 +1,11 @@
 package me.yamlee.apkrelease.internel;
 
+import me.yamlee.apkrelease.Constants;
 import me.yamlee.apkrelease.ReleaseJob;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 
 import java.io.*;
 import java.net.URI;
@@ -12,9 +15,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 public class ChannelApkGenerator implements ReleaseJob {
+    private static final Logger logger = Logging.getLogger(ChannelApkGenerator.class);
+
     private static final String CHANNEL_PREFIX = "/META-INF/";
-    private static final String CHANNEL_FILE_NAME = "channels.properties";
-    private static final String FILE_NAME_CONNECTOR = "-";
+    private static final String FILE_NAME_CONNECTOR = "_";
     private static final String CHANNEL_FLAG = "channel_";
     private String apkFilePath;
 
@@ -24,7 +28,63 @@ public class ChannelApkGenerator implements ReleaseJob {
 
     @Override
     public void execute(Project project) {
-        String channelPath = project.getRootDir().getAbsolutePath() + File.separator + CHANNEL_FILE_NAME;
+        List<String> channelList = getChannelList(project);
+
+        File apkFile = new File(apkFilePath);
+        if (!apkFile.exists()) {
+            logger.lifecycle("Channel apk generate：Could not find apk file in " + apkFile.getPath());
+            return;
+        }
+
+        String existChannel;
+        try {
+            existChannel = readChannel(apkFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        if (existChannel != null) {
+            System.out.println("Channel apk generate：This apk file already exist channel：" + existChannel + "，" +
+                    "please use origin apk file which have not add channel");
+            return;
+        }
+
+        String parentDirPath = apkFile.getParent();
+        if (parentDirPath == null) {
+            System.out.println("Channel apk generate：apk file path error ：" + apkFile.getPath());
+            return;
+        }
+        String apkFileName = apkFile.getName();
+        for (String channel : channelList) {
+            String newApkPath = parentDirPath + File.separator + appendApkNameWithChannel(channel,apkFileName);
+            try {
+                copyFile(apkFilePath, newApkPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
+            if (!changeChannel(newApkPath, CHANNEL_FLAG + channel)) {
+                break;
+            }
+        }
+    }
+
+    String appendApkNameWithChannel(String channel, String apkName) {
+        int lastPintIndex = apkName.lastIndexOf(".");
+        String fileNamePrefix;
+        String fileNameSurfix;
+        if (lastPintIndex != -1) {
+            fileNamePrefix = apkName.substring(0, lastPintIndex);
+            fileNameSurfix = apkName.substring(lastPintIndex, apkName.length());
+        } else {
+            fileNamePrefix = apkName;
+            fileNameSurfix = "";
+        }
+        return fileNamePrefix + FILE_NAME_CONNECTOR + channel + fileNameSurfix;
+    }
+
+    List<String> getChannelList(Project project) {
+        String channelPath = project.getRootDir().getAbsolutePath() + File.separator + Constants.CHANNEL_FILE_NAME;
         File channelFile = new File(channelPath);
         if (!channelFile.exists()) {
             try {
@@ -34,7 +94,7 @@ public class ChannelApkGenerator implements ReleaseJob {
             }
         }
         Properties properties = new Properties();
-        FileInputStream fileInputStream = null ;
+        FileInputStream fileInputStream = null;
         try {
             fileInputStream = new FileInputStream(channelPath);
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
@@ -51,60 +111,7 @@ public class ChannelApkGenerator implements ReleaseJob {
             System.out.println("key:" + key.toString() + ",value:" + properties.get(key));
             channelList.add(key.toString());
         }
-
-        File apkFile = new File(apkFilePath);
-        if (!apkFile.exists()) {
-            System.out.println("找不到文件：" + apkFile.getPath());
-            return;
-        }
-
-        String existChannel;
-        try {
-            existChannel = readChannel(apkFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        if (existChannel != null) {
-            System.out.println("此安装包已存在渠道号：" + existChannel + "，请使用原始包");
-            return;
-        }
-
-        String parentDirPath = apkFile.getParent();
-        if (parentDirPath == null) {
-            System.out.println("请输入完整的文件路径：" + apkFile.getPath());
-            return;
-        }
-        String fileName = apkFile.getName();
-
-        int lastPintIndex = fileName.lastIndexOf(".");
-        String fileNamePrefix;
-        String fileNameSurfix;
-        if (lastPintIndex != -1) {
-            fileNamePrefix = fileName.substring(0, lastPintIndex);
-            fileNameSurfix = fileName.substring(lastPintIndex, fileName.length());
-        } else {
-            fileNamePrefix = fileName;
-            fileNameSurfix = "";
-        }
-
-//        LinkedList<String> channelList = getChannelList(new File(apkFile.getParentFile(), CHANNEL_FILE_NAME));
-//        if (channelList == null) {
-//            return;
-//        }
-
-        for (String channel : channelList) {
-            String newApkPath = parentDirPath + File.separator + fileNamePrefix + FILE_NAME_CONNECTOR + channel + fileNameSurfix;
-            try {
-                copyFile(apkFilePath, newApkPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-            if (!changeChannel(newApkPath, CHANNEL_FLAG + channel)) {
-                break;
-            }
-        }
+        return channelList;
     }
 
     /**
@@ -146,7 +153,7 @@ public class ChannelApkGenerator implements ReleaseJob {
      * 添加渠道号，原理是在apk的META-INF下新建一个文件名为渠道号的文件
      */
     private boolean changeChannel(final String newApkFilePath, final String channel) {
-        try (FileSystem fileSystem = createZipFileSystem(newApkFilePath, false)){
+        try (FileSystem fileSystem = createZipFileSystem(newApkFilePath, false)) {
             final Path root = fileSystem.getPath(CHANNEL_PREFIX);
             ChannelFileVisitor visitor = new ChannelFileVisitor();
             try {
