@@ -24,7 +24,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.me.yamlee:apk-release-plugin:0.1.3"
+    classpath "gradle.plugin.me.yamlee:apk-release-plugin:0.1.4"
   }
 }
 ```
