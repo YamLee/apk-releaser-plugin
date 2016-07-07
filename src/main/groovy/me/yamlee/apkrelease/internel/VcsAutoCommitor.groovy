@@ -2,12 +2,17 @@ package me.yamlee.apkrelease.internel
 
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.StopExecutionException
+import sun.rmi.runtime.Log
 
 /**
  * Auto commit message to version control system
  * Created by yamlee on 6/16/16.
  */
 class VcsAutoCommitor {
+    private static final Logger LOG = Logging.getLogger(VcsAutoCommitor.class);
 
     public static final String VERSION_CODE_KEY = "VERSION_CODE"
     public static final String VERSION_NAME_PATCH_KEY = "VERSION_NAME_PATCH"
@@ -126,7 +131,14 @@ class VcsAutoCommitor {
         try {
             File file = new File(filePath)
             if (!file.exists()) {
-                file.createNewFile()
+                LOG.info("version properties file not exist,now creating...")
+                boolean isCreateSuccess = file.createNewFile()
+                if (isCreateSuccess) {
+                    LOG.info("version properties file create success")
+                } else {
+                    LOG.info("version properties file create fail,now stop execution")
+                    throw new StopExecutionException("version properties file create fail")
+                }
             }
             Properties properties = new Properties()
             FileInputStream fileInputStream = new FileInputStream(file)
