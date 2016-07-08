@@ -10,8 +10,8 @@ class FakeVcsOperator implements VcsOperator {
     private List<String> branchList
     private List<LogMessage> logList
     private List<String> tagList
-    private List<String> remoteTagList
-    private List<LogMessage> remoteLogList
+    List<String> remoteTagList
+    List<LogMessage> remoteLogList
 
     FakeVcsOperator() {
         branchList = new ArrayList<>()
@@ -63,12 +63,13 @@ class FakeVcsOperator implements VcsOperator {
 
     @Override
     boolean addTag(String tagName, String description) {
-        return tagList.add(tagName)
+        tagList.add(tagName)
+        return true;
     }
 
     @Override
     boolean pushTags() {
-        remoteLogList.addAll(logList)
+        remoteTagList.addAll(tagList)
         return true
     }
 

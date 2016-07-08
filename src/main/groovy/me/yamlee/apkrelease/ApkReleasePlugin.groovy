@@ -2,10 +2,14 @@ package me.yamlee.apkrelease
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
+import me.yamlee.apkrelease.internel.ReleasePreparer
+import me.yamlee.apkrelease.internel.iml.AndroidProxy
 import me.yamlee.apkrelease.internel.task.ApkReleaseTask
 import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import me.yamlee.apkrelease.internel.task.ChannelPackageTask
 import me.yamlee.apkrelease.internel.task.GitCommitTask
+import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
+import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -26,17 +30,21 @@ class ApkReleasePlugin implements Plugin<Project> {
             throw new StopExecutionException(
                     "ApkRelease plugin must be applied after 'android' or 'android-library' plugin.")
         }
+        VcsOperator vcsOperator = new GitVcsOperator()
+        AndroidProxy androidProxy = new AndroidProxy()
+        ReleasePreparer releasePreparer = new ReleasePreparer(project, vcsOperator, androidProxy)
+        releasePreparer.prepareApkVersionInfo()
 
-        log.info("rename apk file configure")
+        log.lifecycle("rename apk file configure")
         //rename apk file name
         project.android.applicationVariants.all { variant ->
             //check if staging variant
-            println "android variant name ---> $variant.name"
+            log.lifecycle "android variant name ---> $variant.name"
             def defaultConfig = project.android.defaultConfig
             variant.outputs.each { output ->
                 File file = output.outputFile
                 String fileName = "Near_Merchant_v${defaultConfig.versionName}_${variant.name}_build${defaultConfig.versionCode}.apk"
-                log.info("renamed apk file is $fileName")
+                log.lifecycle("renamed apk file is $fileName")
                 File newApkFile = new File(file.parent, fileName)
                 output.outputFile = newApkFile
                 project.extensions.ext.apkFilePath = newApkFile.absolutePath

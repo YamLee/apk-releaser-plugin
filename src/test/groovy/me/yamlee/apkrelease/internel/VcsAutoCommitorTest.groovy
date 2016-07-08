@@ -37,58 +37,14 @@ class VcsAutoCommitorTest {
     }
 
     @Test
-    public void testCreatePropertyFileIfNotExist() throws Exception {
-        println versionPropertyFilePath
-        vcsAutoCommitor.createVersionPropertiesFileIfNotExist(versionPropertyFilePath)
-
-        def file = new File(versionPropertyFilePath)
-        assertThat(file.exists(), is(true))
-        Properties properties = new Properties()
-        file.withInputStream { inputStream ->
-            properties.load(inputStream)
-        }
-        assertThat(properties.getProperty(VcsAutoCommitor.VERSION_CODE_KEY), is("1"))
-        assertThat(properties.getProperty(VcsAutoCommitor.VERSION_NAME_PATCH_KEY), is("0"))
-    }
-
-    @Test
-    public void testVersionCodeAdd() throws Exception {
-        vcsAutoCommitor.createVersionPropertiesFileIfNotExist(versionPropertyFilePath)
-        vcsAutoCommitor.versionCodeAdd(versionPropertyFilePath)
-        File file = new File(versionPropertyFilePath)
-        Properties properties = new Properties()
-        properties.load(new FileInputStream(file))
-        String patchVersion = properties.getProperty(VcsAutoCommitor.VERSION_NAME_PATCH_KEY)
-        assertThat(patchVersion, is("1"))
-        String versionCode = properties.getProperty(vcsAutoCommitor.VERSION_CODE_KEY)
-        assertThat(versionCode, is("2"))
-        file.delete()
-    }
-
-    @Test
-    public void testGenerateChangeLog() throws Exception {
-        vcsAutoCommitor.createVersionPropertiesFileIfNotExist(Constants.releaseFilePath(project))
+    public void testCommitToVcs() throws Exception {
         fakeVcsOperator.commit("*test1")
         fakeVcsOperator.commit("*测试")
-        fakeVcsOperator.commit("test2")
-        vcsAutoCommitor.generateChangeLog("1.0.0", "*")
-        File file= new File(Constants.changeLogFilePath(project))
-        FileReader fileReader = new FileReader(file)
-        List<String> list = fileReader.readLines()
-        assertThat(list.get(0), is("Change Log for 1.0.0:"))
-        assertThat(list.get(1), is("1. test1"))
-        assertThat(list.get(2), is("2. 测试"))
-
-    }
-
-
-    @Test
-    public void testCommitToVcs() throws Exception {
         vcsAutoCommitor.commitMsgToVcs("*")
-        fakeVcsOperator.branchList()
+        assertThat(fakeVcsOperator.remoteTagList.get(0), is("v1.1.1_1234"))
+        assertThat(fakeVcsOperator.remoteLogList.get(0).message, is("*test1"))
+        assertThat(fakeVcsOperator.remoteLogList.get(1).message, is("*测试"))
     }
-
-
 
 
 }
