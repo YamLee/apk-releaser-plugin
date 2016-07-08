@@ -12,7 +12,7 @@ class FakeAndroid implements Android{
     }
 
     @Override
-    long getVersionCode() {
+    int getVersionCode() {
         return 1234
     }
 

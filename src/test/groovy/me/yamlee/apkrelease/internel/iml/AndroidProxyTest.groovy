@@ -33,18 +33,21 @@ class AndroidProxyTest{
     @Test
     public void testGetAndroidConfig() throws Exception {
         project.apply plugin: 'com.android.application'
+        project.apply plugin: 'me.yamlee.apkrelease'
         project.android {
+            def global = project.extensions.getByName("ext")
             defaultConfig {
                 defaultConfig {
                     applicationId "me.yamlee.demo"
                     minSdkVersion 14
                     targetSdkVersion 21
-                    versionCode 1
-                    versionName "1.0"
+                    versionCode global.versionCode
+                    versionName global.versionName
                 }
             }
         }
         def version = androidProxy.apkVersionName
-        assertThat(version, is("1.0_1"))
+        assertThat(version, is("1.0.0_1"))
+        assertThat(androidProxy.versionCode,is(1))
     }
 }

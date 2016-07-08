@@ -6,7 +6,7 @@ interface Android {
 
     String getApkVersionName()
 
-    long getVersionCode()
+    int getVersionCode()
 
     String getVersionName()
 }
