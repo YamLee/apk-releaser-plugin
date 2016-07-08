@@ -2,7 +2,8 @@ package me.yamlee.apkrelease
 
 import me.yamlee.apkrelease.internel.ApkFileResolver
 import me.yamlee.apkrelease.internel.VcsAutoCommitor
-import me.yamlee.apkrelease.internel.task.ApkRenameTask
+import me.yamlee.apkrelease.internel.iml.AndroidProxy
+import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -16,9 +17,9 @@ class ReleaseJobManager {
     Project project
     ApkFileResolver apkFileResolver
 
-    ReleaseJobManager(Project project,ApkFileResolver apkFileResolver) {
+    ReleaseJobManager(Project project, ApkFileResolver apkFileResolver) {
         this.project = project
-        this.apkFileResolver= apkFileResolver
+        this.apkFileResolver = apkFileResolver
     }
 
     def void run(String buildFlavorName) {
@@ -28,11 +29,7 @@ class ReleaseJobManager {
             throw new GradleException("android task \"assemble$formatName\" not found")
         }
 
-        //1. Rename apk file and this task depends on android assemble task
-        def renameTask = project.task("renameApk", type: ApkRenameTask, dependsOn: "assemble${formatName}")
-        renameTask.execute()
-
-        //2.Find target apk file
+        //1.Find target apk file
         File apkFile = null
         List<File> apkFiles = apkFileResolver.getApkFiles(project)
         apkFiles.each { File file ->
@@ -44,7 +41,7 @@ class ReleaseJobManager {
             throw new StopExecutionException("Can not upload apk file to pgyer because can not find target apk file")
         }
 
-        //3.Upload apk file to pgyer
+        //2.Upload apk file to pgyer
         def items = project.apkRelease.distributeTargets
         for (target in items) {
             String targetName = target.name
@@ -70,8 +67,8 @@ class ReleaseJobManager {
             }
         }
 
-        //4.Commit msg to version control system
-        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor()
-        vcsAutoCommitor.run(project)
+        //3.Commit msg to version control system
+        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
+        vcsAutoCommitor.commitMsgToVcs()
     }
 }

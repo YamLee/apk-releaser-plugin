@@ -8,6 +8,7 @@ import me.yamlee.apkrelease.internel.task.ApkReleaseTask
 import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import me.yamlee.apkrelease.internel.task.ChannelPackageTask
 import me.yamlee.apkrelease.internel.task.GitCommitTask
+import me.yamlee.apkrelease.internel.task.ReleasePrepareTask
 import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
 import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.apache.commons.lang.WordUtils
@@ -31,12 +32,11 @@ class ApkReleasePlugin implements Plugin<Project> {
                     "ApkRelease plugin must be applied after 'android' or 'android-library' plugin.")
         }
         VcsOperator vcsOperator = new GitVcsOperator()
-        AndroidProxy androidProxy = new AndroidProxy()
+        AndroidProxy androidProxy = new AndroidProxy(project)
         ReleasePreparer releasePreparer = new ReleasePreparer(project, vcsOperator, androidProxy)
         releasePreparer.prepareApkVersionInfo()
 
         log.lifecycle("rename apk file configure")
-        //rename apk file name
         project.android.applicationVariants.all { variant ->
             //check if staging variant
             log.lifecycle "android variant name ---> $variant.name"
@@ -51,8 +51,13 @@ class ApkReleasePlugin implements Plugin<Project> {
             }
         }
 
+        def prepareTask = project.task("releasePrepare", type: ReleasePrepareTask)
+
         def item = project.container(ReleaseTarget) { buildFlavorName ->
             String formatName = WordUtils.capitalize(buildFlavorName.toString())
+
+            project.tasks."assemble${formatName}".dependsOn prepareTask
+
             def releaseTask = project.task("apkDist${formatName}",
                     type: ApkReleaseTask,
                     dependsOn: "assemble${formatName}")
@@ -75,6 +80,8 @@ class ApkReleasePlugin implements Plugin<Project> {
 
         def apkReleaseExtension = new ApkReleaseExtension(item)
         project.extensions.apkRelease = apkReleaseExtension
+        prepareTask.logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
+        prepareTask.versionNameAddType = project.extensions.apkRelease.versionType
 //        project.extensions.create("apkRelease", ApkReleaseExtension)
     }
 

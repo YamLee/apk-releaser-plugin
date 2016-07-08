@@ -1,6 +1,7 @@
 package me.yamlee.apkrelease.internel.task
 
 import me.yamlee.apkrelease.ReleaseJobManager
+import me.yamlee.apkrelease.internel.iml.ApkFileResolverIml
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -17,7 +18,7 @@ class ApkReleaseTask extends DefaultTask {
     @TaskAction
     def runTask() {
         LOG.lifecycle("Execute for entire release job")
-        ReleaseJobManager manager = new ReleaseJobManager(project)
+        ReleaseJobManager manager = new ReleaseJobManager(project, new ApkFileResolverIml())
         manager.run(buildFlavorName)
     }
 }
