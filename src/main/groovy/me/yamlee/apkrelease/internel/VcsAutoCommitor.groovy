@@ -1,11 +1,12 @@
 package me.yamlee.apkrelease.internel
 
-import org.ajoberstar.grgit.Grgit
+import me.yamlee.apkrelease.Constants
+import me.yamlee.apkrelease.internel.vcs.LogMessage
+import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.StopExecutionException
-import sun.rmi.runtime.Log
 
 /**
  * Auto commit message to version control system
@@ -28,38 +29,38 @@ class VcsAutoCommitor {
     public static final String LAST_COMMIT_RECORD_KEY = "LAST_COMMIT_RECORD"
 
     VcsOperator vcsOperator
+    Android androidProxy
+    Project project
 
-    VcsAutoCommitor(VcsOperator vcsOperator) {
+    VcsAutoCommitor(Project project, VcsOperator vcsOperator, Android android) {
         this.vcsOperator = vcsOperator
+        this.androidProxy = android
+        this.project = project
     }
 
-    def run(Project project) {
-        String filePath = project.getRootDir() + File.separator + "release.properties"
-        String logFilePath = project.getRootDir() + File.separator + "changelog.md"
+    def run(String logIdentifyTag) {
+        String filePath = Constants.releaseFilePath(project)
         if (createVersionPropertiesFileIfNotExist(filePath)) {
             versionCodeAdd(filePath)
-            commitMsgToVcs(project)
+            commitMsgToVcs(logIdentifyTag)
         }
     }
 
 
-    def commitMsgToVcs(Project project) {
-        String version = getApkVersion(project)
+    def commitMsgToVcs(String logIdentifyTag) {
+        String version = androidProxy.apkVersionName
         def commitMsg = "Build version for " + version
-
-        String propertyPath = project.getRootDir() + File.separator + "release.properties"
-        String logFilePath = project.getRootDir() + File.separator + "changelog.md"
-        generateChangeLog(logFilePath, propertyPath, version)
+        generateChangeLog(version, logIdentifyTag)
         List<String> branchNames = vcsOperator.branchList()
         if (branchNames.contains("ci_branch")) {
-            vcsOperator.checkOut("ci_branch",false)
+            vcsOperator.checkOut("ci_branch", false)
         } else {
-            vcsOperator.checkOut("ci_branch",true)
+            vcsOperator.checkOut("ci_branch", true)
         }
         vcsOperator.commit(commitMsg)
 
-        String lastCommitMsg = vcsOperator.log(1).get(0)
-        vcsOperator.addTag("v${config.versionName}_${config.versionCode}",lastCommitMsg)
+        String lastCommitMsg = vcsOperator.log(1).get(0).message
+        vcsOperator.addTag("v${androidProxy.versionName}_${androidProxy.versionCode}", lastCommitMsg)
         try {
             vcsOperator.push()
             vcsOperator.pushTags()
@@ -68,39 +69,35 @@ class VcsAutoCommitor {
         }
     }
 
-    def String getApkVersion(Project project) {
-        def config = project.android.getProperty('defaultConfig')
-        return config.versionName + "_" + config.versionCode
-    }
-
-    def generateChangeLog(String changelogFilePath, String propertyFilePath, String version) {
+    def generateChangeLog(String version, String logIdentifyTag) {
+        String propertyFilePath = Constants.releaseFilePath(project)
+        String changelogFilePath = Constants.changeLogFilePath(project)
         FileInputStream fileInputStream = new FileInputStream(propertyFilePath)
         Properties properties = new Properties()
         properties.load(fileInputStream)
         String lastReleaseCommitId = properties.getProperty(LAST_COMMIT_RECORD_KEY)
 
-        Grgit git = Grgit.open()
-        def newestHistory = git.log(maxCommits: 1)
+        LogMessage newestHistory = vcsOperator.log(1).get(0)
         String newestReleaseCommitId = newestHistory.id
         def history
         if (lastReleaseCommitId == null || lastReleaseCommitId.equals("")) {
-            history = git.log()
+            history = vcsOperator.logAll()
         } else {
-            history = git.log {
-                range lastReleaseCommitId, newestReleaseCommitId
-            }
+            history = vcsOperator.log(lastReleaseCommitId, newestReleaseCommitId)
         }
         def index = 1
-        StringBuilder stringBuilder = new StringBuilder(version)
+        StringBuilder stringBuilder = new StringBuilder()
+        stringBuilder.append("Change Log for ${version}:")
         history.each { commit ->
-            def log = "${index}. ${commit.shortMessage}"
-            println log
-            if (log.startsWith("*")) {
+            if (commit.message.startsWith(logIdentifyTag)) {
                 stringBuilder.append("\n")
+                def log = "${index}. ${commit.message.replace(logIdentifyTag, "")}"
                 stringBuilder.append(log)
             }
             index++
         }
+        stringBuilder.append("\n")
+        println(stringBuilder.toString())
         writeChangeLog(changelogFilePath, stringBuilder)
     }
 
@@ -111,8 +108,7 @@ class VcsAutoCommitor {
                 file.createNewFile()
             }
             FileWriter fileWriter = new FileWriter(file, true)
-            fileWriter.write("\n")
-            fileWriter.write(stringBuilder.toString())
+            fileWriter.append(stringBuilder.toString())
             fileWriter.close()
         } catch (IOException e) {
             e.printStackTrace()
@@ -153,7 +149,7 @@ class VcsAutoCommitor {
             FileInputStream fileInputStream = new FileInputStream(file)
             properties.load(fileInputStream)
             properties.setProperty(VERSION_CODE_KEY, '1')
-            properties.setProperty(VERSION_NAME_PATCH_KEY, '1')
+            properties.setProperty(VERSION_NAME_PATCH_KEY, '0')
             FileOutputStream fos = new FileOutputStream(file)
             properties.store(fos, "Create new version properties file")
             fos.close()

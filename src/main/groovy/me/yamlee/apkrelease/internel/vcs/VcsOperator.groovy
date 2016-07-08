@@ -1,4 +1,4 @@
-package me.yamlee.apkrelease.internel
+package me.yamlee.apkrelease.internel.vcs
 
 /**
  * Created by yamlee on 7/7/16.
@@ -29,7 +29,21 @@ interface VcsOperator {
      * @param recentCommitCount
      * @return
      */
-    List<String> log(int recentCommitCount)
+    List<LogMessage> log(int recentCommitCount)
+
+    /**
+     * Get commit history log with range
+     * @param recentCommitCount
+     * @return
+     */
+    List<LogMessage> log(String fromCommitId,String toCommitId)
+
+    /**
+     * Get commit all history log
+     * @param recentCommitCount
+     * @return
+     */
+    List<LogMessage> logAll()
 
     /**
      * add a new tag
