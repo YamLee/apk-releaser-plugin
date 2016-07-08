@@ -53,7 +53,7 @@ class GitVcsOperator implements VcsOperator {
     List<LogMessage> log(String fromCommitId, String toCommitId) {
         List<LogMessage> historyList = new ArrayList<>()
         def historys = git.log {
-            range lastReleaseCommitId, newestReleaseCommitId
+            range fromCommitId, toCommitId
         }
         historys.each{ history ->
             LogMessage logMessage = new LogMessage()

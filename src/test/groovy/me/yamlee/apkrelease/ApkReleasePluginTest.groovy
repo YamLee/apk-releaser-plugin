@@ -18,17 +18,14 @@ class ApkReleasePluginTest {
     Project project
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder()
+    File rootDir
 
     @Before
     public void setUp() throws Exception {
+        rootDir = temporaryFolder.newFolder("project")
         project = ProjectBuilder.builder()
-                .withProjectDir(temporaryFolder.root)
+                .withProjectDir(rootDir)
                 .build()
-    }
-
-    @Test
-    public void testInitial() throws Exception {
-        assert 1 == 1
     }
 
     @Test
@@ -89,8 +86,8 @@ class ApkReleasePluginTest {
         }
 
 
-        def task = project.tasks.findByName("apkDistHaojin")
-        task.execute()
+//        def task = project.tasks.findByName("apkDistHaojin")
+//        task.execute()
     }
 
     @Test

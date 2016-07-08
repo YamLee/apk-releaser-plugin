@@ -56,11 +56,10 @@ class ApkReleasePlugin implements Plugin<Project> {
         def item = project.container(ReleaseTarget) { buildFlavorName ->
             String formatName = WordUtils.capitalize(buildFlavorName.toString())
 
-            project.tasks."assemble${formatName}".dependsOn prepareTask
 
             def releaseTask = project.task("apkDist${formatName}",
                     type: ApkReleaseTask,
-                    dependsOn: "assemble${formatName}")
+                    dependsOn: ['releasePrepare',"assemble${formatName}"])
             releaseTask.group = 'apkRelease'
             releaseTask.description = 'release apk with auto commit msg to git and upload apk to pgyer'
             releaseTask.buildFlavorName = buildFlavorName
@@ -82,7 +81,9 @@ class ApkReleasePlugin implements Plugin<Project> {
         project.extensions.apkRelease = apkReleaseExtension
         prepareTask.logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
         prepareTask.versionNameAddType = project.extensions.apkRelease.versionType
+
 //        project.extensions.create("apkRelease", ApkReleaseExtension)
+
     }
 
 
