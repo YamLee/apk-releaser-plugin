@@ -104,7 +104,7 @@ class ApkReleasePluginTest {
 
     @Test
     public void testChannelTask() throws Exception {
-        def channelReleaseTask = project.tasks.findByName("channelApkFromRelease")
+        def channelReleaseTask = project.tasks.findByName("channelFromRelease")
         assertThat(channelReleaseTask,Matchers.notNullValue())
 
         Global global = Global.get(project)

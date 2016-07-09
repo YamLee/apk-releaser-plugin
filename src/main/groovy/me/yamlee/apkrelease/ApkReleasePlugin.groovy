@@ -65,7 +65,7 @@ class ApkReleasePlugin implements Plugin<Project> {
             releaseTask.description = 'release apk with auto commit msg to git and upload apk to pgyer'
             releaseTask.buildFlavorName = buildFlavorName
 
-            def channelPackageTask = project.task("channelApkFrom${formatName}",
+            def channelPackageTask = project.task("channelFrom${formatName}",
                     type: ChannelPackageTask,
                     dependsOn: "assemble${formatName}")
             channelPackageTask.group = 'apkRelease'
