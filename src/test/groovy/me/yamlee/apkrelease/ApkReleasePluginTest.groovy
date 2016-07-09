@@ -1,9 +1,12 @@
 package me.yamlee.apkrelease
 
+import me.yamlee.apkrelease.util.FileCreator
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -12,6 +15,8 @@ import org.quanqi.pgyer.gradle.plugins.ApkTarget
 import org.quanqi.pgyer.gradle.plugins.PgyerAllUploadTask
 import org.quanqi.pgyer.gradle.plugins.PgyerExtension
 import org.quanqi.pgyer.gradle.plugins.PgyerUserUploadTask
+
+import static org.hamcrest.MatcherAssert.*
 
 
 class ApkReleasePluginTest {
@@ -26,12 +31,8 @@ class ApkReleasePluginTest {
         project = ProjectBuilder.builder()
                 .withProjectDir(rootDir)
                 .build()
-    }
-
-    @Test
-    public void testApkReleasePlugin() throws Exception {
         project.apply plugin: 'com.android.application'
-        project.apply plugin: 'me.yamlee.apkrelease'
+        project.apply plugin: ApkReleasePlugin
 
         project.android {
             buildToolsVersion '23.0.2'
@@ -84,10 +85,32 @@ class ApkReleasePluginTest {
                 pgyerUserKey = "9f7e464c5841eed38ef33709d5f8cd8a"
             }
         }
+    }
+
+    @Test
+    public void testApkReleasePlugin() throws Exception {
+
+
+        def haojinTask = project.tasks.findByName("apkDistHaojin")
+        assertThat(haojinTask, Matchers.notNullValue())
+
+        def releaseTask = project.tasks.findByName("apkDistRelease")
+        assertThat(releaseTask,Matchers.notNullValue())
 
 
 //        def task = project.tasks.findByName("apkDistHaojin")
 //        task.execute()
+    }
+
+    @Test
+    public void testChannelTask() throws Exception {
+        def channelReleaseTask = project.tasks.findByName("channelApkFromRelease")
+        assertThat(channelReleaseTask,Matchers.notNullValue())
+
+        Global global = Global.get(project)
+        File apkFile = FileCreator.createApkFile(rootDir,"test_release.apk")
+        global.apkFilePath =apkFile.absolutePath
+        channelReleaseTask.execute()
     }
 
     @Test

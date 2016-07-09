@@ -37,6 +37,7 @@ class ApkReleasePlugin implements Plugin<Project> {
         releasePreparer.prepareApkVersionInfo()
 
         log.lifecycle("rename apk file configure")
+        Global global = Global.get(project)
         project.android.applicationVariants.all { variant ->
             //check if staging variant
             log.lifecycle "android variant name ---> $variant.name"
@@ -47,7 +48,7 @@ class ApkReleasePlugin implements Plugin<Project> {
                 log.lifecycle("renamed apk file is $fileName")
                 File newApkFile = new File(file.parent, fileName)
                 output.outputFile = newApkFile
-                project.extensions.ext.apkFilePath = newApkFile.absolutePath
+                global.apkFilePath = newApkFile.absolutePath
             }
         }
 

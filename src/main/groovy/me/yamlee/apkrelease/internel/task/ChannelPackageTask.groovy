@@ -19,7 +19,7 @@ class ChannelPackageTask extends DefaultTask {
 
     @TaskAction
     def runTask() {
-        log.info("run channel package task")
+        log.lifecycle("--------run channel package task begin-------")
         ApkFileResolver apkFileResolver = new ApkFileResolverIml()
         List<File> apkFiles = apkFileResolver.getApkFiles(project)
         File targetFile = null
@@ -30,5 +30,6 @@ class ChannelPackageTask extends DefaultTask {
         }
         ChannelApkGenerator generator = new ChannelApkGenerator(targetFile.absolutePath)
         generator.execute(project)
+        log.lifecycle("-------run channel package task end--------")
     }
 }

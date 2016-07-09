@@ -6,6 +6,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.api.tasks.StopExecutionException;
 
 import java.io.*;
 import java.net.URI;
@@ -28,11 +29,10 @@ public class ChannelApkGenerator implements ReleaseJob {
 
     @Override
     public void execute(Project project) {
-        List<String> channelList = getChannelList(project);
 
         File apkFile = new File(apkFilePath);
         if (!apkFile.exists()) {
-            logger.lifecycle("Channel apk generate：Could not find apk file in " + apkFile.getPath());
+            logger.lifecycle("Channel apk generate：Could not find origin apk file in " + apkFile.getPath());
             return;
         }
 
@@ -44,19 +44,25 @@ public class ChannelApkGenerator implements ReleaseJob {
             return;
         }
         if (existChannel != null) {
-            System.out.println("Channel apk generate：This apk file already exist channel：" + existChannel + "，" +
+            logger.lifecycle("Channel apk generate：This origin apk file already exist channel：" + existChannel + "，" +
                     "please use origin apk file which have not add channel");
             return;
         }
 
         String parentDirPath = apkFile.getParent();
         if (parentDirPath == null) {
-            System.out.println("Channel apk generate：apk file path error ：" + apkFile.getPath());
+            logger.lifecycle("Channel apk generate：apk file path error ：" + apkFile.getPath());
             return;
         }
+        List<String> channelList = getChannelList(project);
+        if (channelList == null || channelList.size() == 0) {
+            logger.lifecycle("Channel properties file do not exist or it's content is empty,now aborting task");
+            throw new StopExecutionException("Channel properties file error!");
+        }
+
         String apkFileName = apkFile.getName();
         for (String channel : channelList) {
-            String newApkPath = parentDirPath + File.separator + appendApkNameWithChannel(channel,apkFileName);
+            String newApkPath = parentDirPath + File.separator + appendApkNameWithChannel(channel, apkFileName);
             try {
                 copyFile(apkFilePath, newApkPath);
             } catch (IOException e) {
@@ -87,10 +93,20 @@ public class ChannelApkGenerator implements ReleaseJob {
         String channelPath = project.getRootDir().getAbsolutePath() + File.separator + Constants.CHANNEL_FILE_NAME;
         File channelFile = new File(channelPath);
         if (!channelFile.exists()) {
+            logger.lifecycle("Channel properties file not exist,now creating...");
             try {
-                channelFile.createNewFile();
+                boolean isSuccess = channelFile.createNewFile();
+                if (isSuccess) {
+                    logger.lifecycle("Create channel properties file success");
+                } else {
+                    logger.lifecycle("Create channel properties file fail,now aborting task");
+                    throw new StopExecutionException("Channel properties create fail");
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
+                logger.lifecycle("Create channel properties file fail,now aborting task");
+                throw new StopExecutionException("Channel properties create fail");
             }
         }
         Properties properties = new Properties();
