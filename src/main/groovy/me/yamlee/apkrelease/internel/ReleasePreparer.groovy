@@ -75,6 +75,7 @@ class ReleasePreparer {
         }
         if (history == null || history.size() == 0) {
             LOG.lifecycle("Vcs no commit history,abort auto generate change log")
+            return;
         }
         def index = 1
         StringBuilder stringBuilder = new StringBuilder()

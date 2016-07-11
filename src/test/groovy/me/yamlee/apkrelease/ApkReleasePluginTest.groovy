@@ -2,8 +2,11 @@ package me.yamlee.apkrelease
 
 import me.yamlee.apkrelease.util.FileCreator
 import org.apache.commons.lang.WordUtils
+import org.gradle.api.Action
+import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.TaskAction
 import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
@@ -91,11 +94,8 @@ class ApkReleasePluginTest {
     public void testApkReleasePlugin() throws Exception {
 
 
-
-
         def releaseTask = project.tasks.findByName("apkDistRelease")
-        assertThat(releaseTask,Matchers.notNullValue())
-
+        assertThat(releaseTask, Matchers.notNullValue())
 
 //        def task = project.tasks.findByName("apkDistHaojin")
 //        task.execute()
@@ -107,8 +107,8 @@ class ApkReleasePluginTest {
         assertThat(haojinTask, Matchers.notNullValue())
 
         Global global = Global.get(project)
-        File apkFile = FileCreator.createApkFile(rootDir,"test_haojin.apk")
-        global.apkFilePath =apkFile.absolutePath
+        File apkFile = FileCreator.createApkFile(rootDir, "test_haojin.apk")
+        global.apkFilePath = apkFile.absolutePath
 
         project.tasks.assembleHaojin << {
             println "assembleHaojin task run"
@@ -117,13 +117,51 @@ class ApkReleasePluginTest {
     }
 
     @Test
+    public void testTaskDepends() throws Exception {
+
+//
+
+        project.tasks.create('test1', TestTask1)
+        project.tasks.create('test2', TestTask2)
+
+        def t1 = project.tasks.findByName("test1")
+        def t2 = project.tasks.findByName("test2")
+
+//        project.tasks.test2.dependsOn test1
+//        project.tasks.test2.execute()
+//       project.tasks.test2.dependsOn  project.tasks.test1
+//        project.tasks.test2.execute()
+
+        def suffic = "test"
+        project.tasks."${suffic}2".execute()
+//        t2.dependsOn t1
+//        t2.execute()
+    }
+
+   static class TestTask1 extends DefaultTask {
+
+        @TaskAction
+        def runTask() {
+            println "test1"
+        }
+    }
+
+    static class TestTask2 extends DefaultTask {
+
+        @TaskAction
+        def runTask() {
+            println "test2"
+        }
+    }
+
+    @Test
     public void testChannelTask() throws Exception {
         def channelReleaseTask = project.tasks.findByName("channelFromRelease")
-        assertThat(channelReleaseTask,Matchers.notNullValue())
+        assertThat(channelReleaseTask, Matchers.notNullValue())
 
         Global global = Global.get(project)
-        File apkFile = FileCreator.createApkFile(rootDir,"test_release.apk")
-        global.apkFilePath =apkFile.absolutePath
+        File apkFile = FileCreator.createApkFile(rootDir, "test_release.apk")
+        global.apkFilePath = apkFile.absolutePath
         channelReleaseTask.execute()
     }
 

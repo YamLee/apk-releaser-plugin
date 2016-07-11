@@ -2,6 +2,7 @@ package me.yamlee.apkrelease.internel.task
 
 import me.yamlee.apkrelease.ReleaseJobManager
 import me.yamlee.apkrelease.internel.iml.ApkFileResolverIml
+import org.apache.commons.lang.WordUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -18,8 +19,14 @@ class ApkReleaseTask extends DefaultTask {
     @TaskAction
     def runTask() {
         LOG.lifecycle("--------Apk Distribute task begin-------")
+
+        project.tasks.findAll { task ->
+            if (task.name.startsWith("assemble${WordUtils.capitalize(buildFlavorName.toString())}")) {
+                task.dependsOn project.tasks.releasePrepare
+            }
+        }
         ReleaseJobManager manager = new ReleaseJobManager(project, new ApkFileResolverIml())
         manager.run(buildFlavorName)
-        LOG.lifecycle("--------Apk Distribute task begin-------")
+        LOG.lifecycle("--------Apk Distribute task end-------")
     }
 }
