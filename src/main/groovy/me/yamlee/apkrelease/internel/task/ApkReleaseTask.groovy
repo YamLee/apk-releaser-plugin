@@ -20,11 +20,7 @@ class ApkReleaseTask extends DefaultTask {
     def runTask() {
         LOG.lifecycle("--------Apk Distribute task begin-------")
 
-        project.tasks.findAll { task ->
-            if (task.name.startsWith("assemble${WordUtils.capitalize(buildFlavorName.toString())}")) {
-                task.dependsOn project.tasks.releasePrepare
-            }
-        }
+
         ReleaseJobManager manager = new ReleaseJobManager(project, new ApkFileResolverIml())
         manager.run(buildFlavorName)
         LOG.lifecycle("--------Apk Distribute task end-------")
