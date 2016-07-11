@@ -153,16 +153,17 @@ class ReleasePreparer {
                     LOG.lifecycle("version properties file create fail,now stop execution")
                     throw new StopExecutionException("version properties file create fail")
                 }
+                Properties properties = new Properties()
+                FileInputStream fileInputStream = new FileInputStream(file)
+                properties.load(fileInputStream)
+                properties.setProperty(KEY_VERSION_CODE, '1')
+                properties.setProperty(KEY_VERSION_NAME, '1.0.0')
+                FileOutputStream fos = new FileOutputStream(file)
+                properties.store(fos, "Create new version properties file")
+                fos.close()
+                fileInputStream.close()
             }
-            Properties properties = new Properties()
-            FileInputStream fileInputStream = new FileInputStream(file)
-            properties.load(fileInputStream)
-            properties.setProperty(KEY_VERSION_CODE, '1')
-            properties.setProperty(KEY_VERSION_NAME, '1.0.0')
-            FileOutputStream fos = new FileOutputStream(file)
-            properties.store(fos, "Create new version properties file")
-            fos.close()
-            fileInputStream.close()
+
         } catch (IOException e) {
             e.printStackTrace()
             return false
