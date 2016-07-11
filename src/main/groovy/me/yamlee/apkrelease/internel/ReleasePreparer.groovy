@@ -145,12 +145,12 @@ class ReleasePreparer {
         try {
             File file = new File(filePath)
             if (!file.exists()) {
-                LOG.lifecycle("version properties file not exist,now creating...")
+                LOG.lifecycle("release properties file not exist,now creating...")
                 boolean isCreateSuccess = file.createNewFile()
                 if (isCreateSuccess) {
-                    LOG.lifecycle("version properties file create success")
+                    LOG.lifecycle("release properties file create success")
                 } else {
-                    LOG.lifecycle("version properties file create fail,now stop execution")
+                    LOG.lifecycle("release properties file create fail,now stop execution")
                     throw new StopExecutionException("version properties file create fail")
                 }
                 Properties properties = new Properties()
@@ -159,7 +159,7 @@ class ReleasePreparer {
                 properties.setProperty(KEY_VERSION_CODE, '1')
                 properties.setProperty(KEY_VERSION_NAME, '1.0.0')
                 FileOutputStream fos = new FileOutputStream(file)
-                properties.store(fos, "Create new version properties file")
+                properties.store(fos, "Create new release properties file")
                 fos.close()
                 fileInputStream.close()
             }
