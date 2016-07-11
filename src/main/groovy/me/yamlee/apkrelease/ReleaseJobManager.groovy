@@ -71,7 +71,7 @@ class ReleaseJobManager {
         }
 
         //3.Commit msg to version control system
-//        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
-//        vcsAutoCommitor.commitMsgToVcs()
+        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
+        vcsAutoCommitor.commitMsgToVcs()
     }
 }

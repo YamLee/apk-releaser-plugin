@@ -27,9 +27,9 @@ class ReleasePrepareTask extends DefaultTask {
             versionNameType = ReleasePreparer.VersionNameType.MINOR
         } else {
             versionNameType = ReleasePreparer.VersionNameType.PATCH
-
         }
         preparer.run(logIdentifyTag, versionNameType)
+
         LOG.lifecycle("--------Prepare task end--------")
     }
 }

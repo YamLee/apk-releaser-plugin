@@ -77,12 +77,13 @@ class ReleasePreparer {
             LOG.lifecycle("Vcs no commit history,abort auto generate change log")
             return;
         }
+        LOG.lifecycle("Get VCS log history size ${history.size()}")
         def index = 1
         StringBuilder stringBuilder = new StringBuilder()
         stringBuilder.append("Change Log for ${version}:")
         StringBuilder logItemString = new StringBuilder()
         history.each { commit ->
-            if (commit.message.startsWith(logIdentifyTag)) {
+            if (commit != null && commit.message != null && commit.message.startsWith(logIdentifyTag)) {
                 logItemString.append("\n")
                 def log = "${index}. ${commit.message.replace(logIdentifyTag, "")}"
                 logItemString.append(log)
