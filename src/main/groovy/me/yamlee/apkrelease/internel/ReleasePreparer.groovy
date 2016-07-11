@@ -67,23 +67,32 @@ class ReleasePreparer {
 
         LogMessage newestHistory = vcsOperator.log(1).get(0)
         String newestReleaseCommitId = newestHistory.id
-        def history
+        List<LogMessage> history
         if (lastReleaseCommitId == null || lastReleaseCommitId.equals("")) {
             history = vcsOperator.logAll()
         } else {
             history = vcsOperator.log(lastReleaseCommitId, newestReleaseCommitId)
         }
+        if (history == null || history.size() == 0) {
+            LOG.lifecycle("Vcs no commit history,abort auto generate change log")
+        }
         def index = 1
         StringBuilder stringBuilder = new StringBuilder()
         stringBuilder.append("Change Log for ${version}:")
+        StringBuilder logItemString = new StringBuilder()
         history.each { commit ->
             if (commit.message.startsWith(logIdentifyTag)) {
-                stringBuilder.append("\n")
+                logItemString.append("\n")
                 def log = "${index}. ${commit.message.replace(logIdentifyTag, "")}"
-                stringBuilder.append(log)
+                logItemString.append(log)
+                index++
             }
-            index++
         }
+        if (logItemString.toString() == null || logItemString.toString() == "") {
+            LOG.lifecycle("Vcs commit history not have any marked log since last release,now aborting add new change log")
+            return
+        }
+        stringBuilder.append(logItemString.toString())
         stringBuilder.append("\n")
         println(stringBuilder.toString())
         writeChangeLog(changelogFilePath, stringBuilder)
@@ -176,7 +185,7 @@ class ReleasePreparer {
         createVersionPropertiesFileIfNotExist(Constants.releaseFilePath(project))
         File file = new File(Constants.releaseFilePath(project))
         Properties properties = new Properties()
-        file.withInputStream {inputStream ->
+        file.withInputStream { inputStream ->
             properties.load(inputStream)
         }
         project.extensions.ext.versionCode = Integer.parseInt(properties.getProperty(KEY_VERSION_CODE))

@@ -13,12 +13,12 @@ import org.gradle.api.tasks.TaskAction
  */
 class ReleasePrepareTask extends DefaultTask {
     private static final Logger LOG = Logging.getLogger(ReleasePrepareTask.class);
-    String logIdentifyTag ="*"
+    String logIdentifyTag = "*"
     String versionNameAddType = "patch"
 
     @TaskAction
     def runTask() {
-        LOG.lifecycle("Execute for release prepare")
+        LOG.lifecycle("--------Prepare task begin--------")
         ReleasePreparer preparer = new ReleasePreparer(project, new GitVcsOperator(), new AndroidProxy(project))
         ReleasePreparer.VersionNameType versionNameType
         if (versionNameAddType == "major") {
@@ -30,5 +30,6 @@ class ReleasePrepareTask extends DefaultTask {
 
         }
         preparer.run(logIdentifyTag, versionNameType)
+        LOG.lifecycle("--------Prepare task end--------")
     }
 }

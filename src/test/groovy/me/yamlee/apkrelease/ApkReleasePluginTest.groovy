@@ -91,8 +91,7 @@ class ApkReleasePluginTest {
     public void testApkReleasePlugin() throws Exception {
 
 
-        def haojinTask = project.tasks.findByName("apkDistHaojin")
-        assertThat(haojinTask, Matchers.notNullValue())
+
 
         def releaseTask = project.tasks.findByName("apkDistRelease")
         assertThat(releaseTask,Matchers.notNullValue())
@@ -100,6 +99,21 @@ class ApkReleasePluginTest {
 
 //        def task = project.tasks.findByName("apkDistHaojin")
 //        task.execute()
+    }
+
+    @Test
+    public void testDistTask() throws Exception {
+        def haojinTask = project.tasks.findByName("apkDistHaojin")
+        assertThat(haojinTask, Matchers.notNullValue())
+
+        Global global = Global.get(project)
+        File apkFile = FileCreator.createApkFile(rootDir,"test_haojin.apk")
+        global.apkFilePath =apkFile.absolutePath
+
+        project.tasks.assembleHaojin << {
+            println "assembleHaojin task run"
+        }
+        haojinTask.execute()
     }
 
     @Test

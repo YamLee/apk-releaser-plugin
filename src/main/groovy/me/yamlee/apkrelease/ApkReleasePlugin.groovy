@@ -53,14 +53,18 @@ class ApkReleasePlugin implements Plugin<Project> {
         }
 
         def prepareTask = project.task("releasePrepare", type: ReleasePrepareTask)
+        prepareTask.group = 'apkRelease'
+        prepareTask.description = 'Prepare task such as prepare release properties file,and so on'
 
         def item = project.container(ReleaseTarget) { buildFlavorName ->
             String formatName = WordUtils.capitalize(buildFlavorName.toString())
 
+            def assembleTask = project.tasks.findByName("assemble${formatName}")
+            assembleTask.mustRunAfter prepareTask
 
             def releaseTask = project.task("apkDist${formatName}",
                     type: ApkReleaseTask,
-                    dependsOn: ['releasePrepare',"assemble${formatName}"])
+                    dependsOn: ['releasePrepare', "assemble${formatName}"])
             releaseTask.group = 'apkRelease'
             releaseTask.description = 'release apk with auto commit msg to git and upload apk to pgyer'
             releaseTask.buildFlavorName = buildFlavorName

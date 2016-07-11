@@ -17,7 +17,8 @@ class GitVcsOperator implements VcsOperator {
     List<String> branchList() {
         def branches = git.branch.list()
         List<String> branchNames = new ArrayList<>()
-        branches.each { String branchName ->
+        branches.each { branch ->
+            def branchName = branch.name
             println branchName
             branchNames.add(branchName)
         }
@@ -40,7 +41,7 @@ class GitVcsOperator implements VcsOperator {
     List<LogMessage> log(int recentCommitCount) {
         List<LogMessage> historyList = new ArrayList<>()
         def historys = git.log(maxCommits: recentCommitCount)
-        historys.each{ history ->
+        historys.each { history ->
             LogMessage logMessage = new LogMessage()
             logMessage.id = history.id
             logMessage.message = history.shortMessage
@@ -55,7 +56,7 @@ class GitVcsOperator implements VcsOperator {
         def historys = git.log {
             range fromCommitId, toCommitId
         }
-        historys.each{ history ->
+        historys.each { history ->
             LogMessage logMessage = new LogMessage()
             logMessage.id = history.id
             logMessage.message = history.shortMessage
@@ -68,7 +69,7 @@ class GitVcsOperator implements VcsOperator {
     List<LogMessage> logAll() {
         List<LogMessage> historyList = new ArrayList<>()
         def historys = git.log()
-        historys.each{ history ->
+        historys.each { history ->
             LogMessage logMessage = new LogMessage()
             logMessage.id = history.id
             logMessage.message = history.shortMessage

@@ -7,6 +7,8 @@ import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.StopExecutionException
 
 /**
@@ -14,6 +16,7 @@ import org.gradle.api.tasks.StopExecutionException
  * Manage all release job ,including upload apk job ,vcs msg commit job
  */
 class ReleaseJobManager {
+    static final Logger LOG = Logging.getLogger(ReleaseJobManager)
     Project project
     ApkFileResolver apkFileResolver
 
@@ -38,7 +41,7 @@ class ReleaseJobManager {
             }
         }
         if (apkFile == null) {
-            throw new StopExecutionException("Can not upload apk file to pgyer because can not find target apk file")
+            throw new GradleException("Can not upload apk file to pgyer because can not find target apk file")
         }
 
         //2.Upload apk file to pgyer
