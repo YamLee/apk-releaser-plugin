@@ -33,9 +33,22 @@ class ApkReleasePlugin implements Plugin<Project> {
             throw new StopExecutionException(
                     "ApkRelease plugin must be applied after 'android' or 'android-library' plugin.")
         }
+
+        def prepareTask = project.task("releasePrepare", type: ReleasePrepareTask)
+        prepareTask.group = 'apkRelease'
+        prepareTask.description = 'Prepare task such as prepare release properties file,and so on'
+
         VcsOperator vcsOperator = new GitVcsOperator()
         AndroidProxy androidProxy = new AndroidProxy(project)
         ReleasePreparer releasePreparer = new ReleasePreparer(project, vcsOperator, androidProxy)
+
+        def runTasks = project.getGradle().startParameter.taskNames
+        runTasks.each { task ->
+            println "run task name ${task}"
+            if (task.startsWith("apkDist")) {
+                prepareTask.execute()
+            }
+        }
         releasePreparer.prepareApkVersionInfo()
 
         log.lifecycle("rename apk file configure")
@@ -54,17 +67,8 @@ class ApkReleasePlugin implements Plugin<Project> {
             }
         }
 
-        def prepareTask = project.task("releasePrepare", type: ReleasePrepareTask)
-        prepareTask.group = 'apkRelease'
-        prepareTask.description = 'Prepare task such as prepare release properties file,and so on'
-
-
-
         def item = project.container(ReleaseTarget) { buildFlavorName ->
             String formatName = WordUtils.capitalize(buildFlavorName.toString())
-
-
-
             def releaseTask = project.task("apkDist${formatName}",
                     type: ApkReleaseTask,
                     dependsOn: ["assemble${formatName}", prepareTask])
@@ -97,12 +101,6 @@ class ApkReleasePlugin implements Plugin<Project> {
         project.extensions.apkRelease = apkReleaseExtension
         prepareTask.logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
         prepareTask.versionNameAddType = project.extensions.apkRelease.versionType
-
-        project.tasks.findAll { task ->
-            if (task.name.startsWith("assemble${formatName}")) {
-                task.mustRunAfter 'apkRelease'
-            }
-        }
 
 //        project.extensions.create("apkRelease", ApkReleaseExtension)
 
