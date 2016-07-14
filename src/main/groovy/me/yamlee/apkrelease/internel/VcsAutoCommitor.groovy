@@ -1,6 +1,7 @@
 package me.yamlee.apkrelease.internel
 
 import me.yamlee.apkrelease.internel.vcs.VcsOperator
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -25,11 +26,17 @@ class VcsAutoCommitor{
     def commitMsgToVcs() {
         String version = androidProxy.apkVersionName
         def commitMsg = "Build version for " + version
+        String branchName = project.extensions.apkRelease.branchName
+        if (branchName == null || branchName.equals("")) {
+            throw new GradleException("branchName can not be empty")
+        }
         List<String> branchNames = vcsOperator.branchList()
-        if (branchNames.contains("ci_branch")) {
-            vcsOperator.checkOut("ci_branch", false)
+        if (branchNames.contains(branchName)) {
+            LOG.lifecycle("branch ${branchName} exsist,now check out...")
+            vcsOperator.checkOut(branchName, false)
         } else {
-            vcsOperator.checkOut("ci_branch", true)
+            LOG.lifecycle("branch ${branchName} do not exsist,now create new...")
+            vcsOperator.checkOut(branchName, true)
         }
         vcsOperator.commit(commitMsg)
 

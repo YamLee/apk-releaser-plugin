@@ -78,7 +78,12 @@ class ApkReleasePluginTest {
             }
         }
 
+        project.apkRelease{
+            branchName = 'test_branch'
+        }
+
         project.apkRelease.apkDistribute {
+
             haojin {
                 pgyerApiKey = "fb914b7d5b72fc11622cafaa3dfb183f"
                 pgyerUserKey = "ebdbfa7770bec238a0e9770e79459210"

@@ -65,28 +65,31 @@ class ApkReleasePlugin implements Plugin<Project> {
 
             project.tasks.findAll { task ->
                 if (task.name.startsWith("assemble${formatName}")) {
-                    task.doFirst(new Action<Task>() {
-                        @Override
-                        void execute(Task tmpTask) {
-                            prepareTask.execute()
-                        }
-                    })
+                    task.mustRunAfter prepareTask
                 }
             }
 
             def releaseTask = project.task("apkDist${formatName}",
                     type: ApkReleaseTask,
-                    dependsOn: "assemble${formatName}")
+                    dependsOn: ["assemble${formatName}", prepareTask])
             releaseTask.group = 'apkRelease'
             releaseTask.description = 'release apk with auto commit msg to git and upload apk to pgyer'
             releaseTask.buildFlavorName = buildFlavorName
 
-            def channelPackageTask = project.task("channelFrom${formatName}",
+            //generate channel package depends on new build
+            def channelPackageTask = project.task("channelFrom${formatName}WithNewBuild",
                     type: ChannelPackageTask,
                     dependsOn: "assemble${formatName}")
             channelPackageTask.group = 'apkRelease'
             channelPackageTask.description = 'build apk file with different channel'
             channelPackageTask.buildFlavorName = buildFlavorName
+
+            //generate channel package without new build
+            def channelTask = project.task("channelFrom${formatName}", type: ChannelPackageTask)
+            channelTask.group = 'apkRelease'
+            channelTask.description = 'build apk file with different channel'
+            channelTask.buildFlavorName = buildFlavorName
+
             project.extensions.create(buildFlavorName, ReleaseTarget, formatName)
         }
 
