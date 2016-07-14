@@ -63,11 +63,7 @@ class ApkReleasePlugin implements Plugin<Project> {
         def item = project.container(ReleaseTarget) { buildFlavorName ->
             String formatName = WordUtils.capitalize(buildFlavorName.toString())
 
-            project.tasks.findAll { task ->
-                if (task.name.startsWith("assemble${formatName}")) {
-                    task.mustRunAfter prepareTask
-                }
-            }
+
 
             def releaseTask = project.task("apkDist${formatName}",
                     type: ApkReleaseTask,
@@ -101,6 +97,12 @@ class ApkReleasePlugin implements Plugin<Project> {
         project.extensions.apkRelease = apkReleaseExtension
         prepareTask.logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
         prepareTask.versionNameAddType = project.extensions.apkRelease.versionType
+
+        project.tasks.findAll { task ->
+            if (task.name.startsWith("assemble${formatName}")) {
+                task.mustRunAfter 'apkRelease'
+            }
+        }
 
 //        project.extensions.create("apkRelease", ApkReleaseExtension)
 
