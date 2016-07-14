@@ -28,6 +28,9 @@ class ReleasePrepareTask extends DefaultTask {
         } else {
             versionNameType = ReleasePreparer.VersionNameType.PATCH
         }
+        if (null == logIdentifyTag || logIdentifyTag.equals("")) {
+            logIdentifyTag = "*"
+        }
         preparer.run(logIdentifyTag, versionNameType)
 
         LOG.lifecycle("--------Prepare task end--------")
