@@ -82,7 +82,8 @@ class ReleasePreparer {
         StringBuilder stringBuilder = new StringBuilder()
         stringBuilder.append("Change Log for ${version}:")
         StringBuilder logItemString = new StringBuilder()
-        history.each { commit ->
+        for (int i = 0; i < history.size(); i++) {
+            LogMessage commit = history.get(i)
             if (commit != null && commit.message != null && commit.message.startsWith(logIdentifyTag)) {
                 logItemString.append("\n")
                 def log = "${index}. ${commit.message.replace(logIdentifyTag, "")}"
@@ -90,6 +91,7 @@ class ReleasePreparer {
                 index++
             }
         }
+
         if (logItemString.toString() == null || logItemString.toString() == "") {
             LOG.lifecycle("Vcs commit history not have any marked log since last release,now aborting add new change log")
             return
