@@ -68,7 +68,6 @@ android {
     productFlavors {
         //市场版本发布,release
         store {
-            manifestPlaceholders = [channelName: "store", isFirstLauncher: "false"]
         }
     }
 
