@@ -5,6 +5,7 @@ import me.yamlee.apkrelease.internel.ReleasePreparer
 import me.yamlee.apkrelease.internel.VcsAutoCommitor
 import me.yamlee.apkrelease.internel.iml.AndroidProxy
 import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
+import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -32,6 +33,25 @@ class ReleaseJobManager {
         if (buildFavorTargetTask == null) {
             throw new GradleException("android task \"assemble$formatName\" not found")
         }
+
+        VcsOperator vcsOperator = new GitVcsOperator()
+        AndroidProxy androidProxy = new AndroidProxy(project)
+        ReleasePreparer releasePreparer = new ReleasePreparer(project, vcsOperator, androidProxy)
+        String logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
+        String versionNameAddType = project.extensions.apkRelease.versionType
+        ReleasePreparer.VersionNameType versionNameType
+        if (versionNameAddType == "major") {
+            versionNameType = ReleasePreparer.VersionNameType.MAJOR
+        } else if (versionNameAddType == "minor") {
+            versionNameType = ReleasePreparer.VersionNameType.MINOR
+        } else {
+            versionNameType = ReleasePreparer.VersionNameType.PATCH
+        }
+        if (null == logIdentifyTag || logIdentifyTag.equals("")) {
+            logIdentifyTag = "*"
+        }
+        releasePreparer.run(logIdentifyTag, versionNameType, buildFlavorName)
+        LOG.lifecycle("...release task configure end...")
 
         //1.Find target apk file
         File apkFile = null

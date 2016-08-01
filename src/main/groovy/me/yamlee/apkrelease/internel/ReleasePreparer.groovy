@@ -59,14 +59,7 @@ class ReleasePreparer {
             if (flavorName.equalsIgnoreCase(buildFlavorName)) {
                 LOG.lifecycle("...find target flavor is:${flavorName}....")
                 if (createVersionPropertiesFileIfNotExist(filePath)) {
-                    String version;
-                    if (target.autoAddVersionCode) {
-                        LOG.lifecycle("...Add version code enabled,now add version code....")
-                        version = setAddedVersionCode(filePath, type)
-                    } else {
-                        LOG.lifecycle("...Add version code disabled,just reading exist version code....")
-                        version = setVersionCode(filePath)
-                    }
+                    String version = setVersionCode(filePath)
                     if (target.generateChangeLog) {
                         LOG.lifecycle("...Generate change log enabled,now generating change log...")
                         generateChangeLog(version, logIdentifyTag)
@@ -76,7 +69,6 @@ class ReleasePreparer {
                 LOG.lifecycle("...not target flavor:${flavorName}...")
             }
         }
-
     }
 
     def generateChangeLog(String version, String logIdentifyTag) {
@@ -189,9 +181,6 @@ class ReleasePreparer {
         properties.load(fileInputStream)
         def versionCode = properties.getProperty(KEY_VERSION_CODE)
         String versionName = properties.getProperty(KEY_VERSION_NAME)
-
-        properties.setProperty(KEY_VERSION_CODE, String.valueOf(versionCode))
-        properties.setProperty(KEY_VERSION_NAME, String.valueOf(versionName))
         project.extensions.ext.versionCode = versionCode
         project.extensions.ext.versionName = versionName
         fileInputStream.close()
@@ -242,8 +231,8 @@ class ReleasePreparer {
         Properties properties = new Properties()
         file.withInputStream { inputStream ->
             properties.load(inputStream)
+            project.extensions.ext.versionCode = Integer.parseInt(properties.getProperty(KEY_VERSION_CODE))
+            project.extensions.ext.versionName = properties.getProperty(KEY_VERSION_NAME)
         }
-        project.extensions.ext.versionCode = Integer.parseInt(properties.getProperty(KEY_VERSION_CODE))
-        project.extensions.ext.versionName = properties.getProperty(KEY_VERSION_NAME)
     }
 }

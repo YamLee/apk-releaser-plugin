@@ -1,7 +1,11 @@
 package me.yamlee.apkrelease.internel.task
 
 import me.yamlee.apkrelease.ReleaseJobManager
+import me.yamlee.apkrelease.internel.ReleasePreparer
+import me.yamlee.apkrelease.internel.iml.AndroidProxy
 import me.yamlee.apkrelease.internel.iml.ApkFileResolverIml
+import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
+import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.apache.commons.lang.WordUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
@@ -15,6 +19,10 @@ class ApkReleaseTask extends DefaultTask {
     private static final Logger LOG = Logging.getLogger(ApkReleaseTask.class);
     String buildFlavorName
 
+    ApkReleaseTask() {
+
+
+    }
 
     @TaskAction
     def runTask() {

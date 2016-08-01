@@ -38,13 +38,15 @@ class ApkReleasePluginTest {
         project.apply plugin: ApkReleasePlugin
 
         project.android {
+            def global = project.extensions.ext
+
             buildToolsVersion '23.0.2'
 
             //     <!-- 解决Android L上通知显示异常问题，targetSdkVersion需要设置成22 -->
             defaultConfig {
                 applicationId "in.haojin.nearbymerchant"
-                versionCode 100
-                versionName "1.9.0"
+                versionCode global.versionCode
+                versionName global.versionName
                 // Enabling multidex support.
                 multiDexEnabled true
 
@@ -112,10 +114,17 @@ class ApkReleasePluginTest {
         haojinTask.execute()
     }
 
+
     @Test
     public void testPrepare() throws Exception {
         def prepareTask = project.tasks.findByName("releasePrepare")
         prepareTask.execute()
+    }
+
+    @Test
+    public void testAddPatchVersionName() throws Exception {
+        def patchVersion = project.tasks.findByName("addPatchVersionName")
+        patchVersion.execute()
     }
 
     @Test

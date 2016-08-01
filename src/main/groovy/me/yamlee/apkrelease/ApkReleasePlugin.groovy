@@ -5,6 +5,7 @@ import com.android.build.gradle.LibraryPlugin
 import me.yamlee.apkrelease.internel.ReleasePreparer
 import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import me.yamlee.apkrelease.internel.iml.AndroidProxy
+import me.yamlee.apkrelease.internel.task.AddVersionCodeTask
 import me.yamlee.apkrelease.internel.task.ApkReleaseTask
 import me.yamlee.apkrelease.internel.task.ChannelPackageTask
 import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
@@ -55,36 +56,25 @@ class ApkReleasePlugin implements Plugin<Project> {
 
             project.extensions.create(buildFlavorName, ReleaseTarget, formatName)
         }
-
         def apkReleaseExtension = new ApkReleaseExtension(item)
         project.extensions.apkRelease = apkReleaseExtension
 
 
+        project.task("addPatchVersionName", type: AddVersionCodeTask, {
+            versionNameType = ReleasePreparer.VersionNameType.PATCH
+        })
+
+        project.task("addMinorVersionName", type: AddVersionCodeTask, {
+            versionNameType = ReleasePreparer.VersionNameType.MINOR
+        })
+
+        project.task("addMajorVersionName", type: AddVersionCodeTask, {
+            versionNameType = ReleasePreparer.VersionNameType.MAJOR
+        })
+
         VcsOperator vcsOperator = new GitVcsOperator()
         AndroidProxy androidProxy = new AndroidProxy(project)
         ReleasePreparer releasePreparer = new ReleasePreparer(project, vcsOperator, androidProxy)
-        String logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
-        String versionNameAddType = project.extensions.apkRelease.versionType
-
-        def runTasks = project.getGradle().startParameter.taskNames
-        runTasks.each { task ->
-            println "run task name ${task}"
-            if (task.startsWith("apkDist")) {
-                ReleasePreparer.VersionNameType versionNameType
-                if (versionNameAddType == "major") {
-                    versionNameType = ReleasePreparer.VersionNameType.MAJOR
-                } else if (versionNameAddType == "minor") {
-                    versionNameType = ReleasePreparer.VersionNameType.MINOR
-                } else {
-                    versionNameType = ReleasePreparer.VersionNameType.PATCH
-                }
-                if (null == logIdentifyTag || logIdentifyTag.equals("")) {
-                    logIdentifyTag = "*"
-                }
-                String buildFlavorName = task.replace("apkDist", "")
-                releasePreparer.run(logIdentifyTag, versionNameType, buildFlavorName)
-            }
-        }
         releasePreparer.prepareApkVersionInfo()
 
         log.lifecycle("rename apk file configure")
