@@ -1,6 +1,7 @@
 package me.yamlee.apkrelease
 
 import me.yamlee.apkrelease.internel.ApkFileResolver
+import me.yamlee.apkrelease.internel.ReleasePreparer
 import me.yamlee.apkrelease.internel.VcsAutoCommitor
 import me.yamlee.apkrelease.internel.iml.AndroidProxy
 import me.yamlee.apkrelease.internel.vcs.GitVcsOperator
@@ -46,6 +47,8 @@ class ReleaseJobManager {
 
         //2.Upload apk file to pgyer
         def items = project.apkRelease.distributeTargets
+        LOG.lifecycle("...distribute iterate flavors....")
+        LOG.lifecycle("...flavors size is:${items.size()}....")
         for (target in items) {
             String targetName = target.name
             if (targetName.equalsIgnoreCase(buildFlavorName)) {
@@ -67,11 +70,12 @@ class ReleaseJobManager {
                 }
                 def uploadTask = project.tasks.findByName("uploadPgyer")
                 uploadTask.execute()
-            }
-            if (targetName.equalsIgnoreCase(buildFlavorName) && target.autoCommitToCVS) {
-                //3.Commit msg to version control system
-                VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
-                vcsAutoCommitor.commitMsgToVcs()
+
+                if (target.autoCommitToCVS) {
+                    //3.Commit msg to version control system
+                    VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
+                    vcsAutoCommitor.commitMsgToVcs()
+                }
             }
         }
 

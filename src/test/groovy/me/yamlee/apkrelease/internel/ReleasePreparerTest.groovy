@@ -57,7 +57,7 @@ class ReleasePreparerTest {
     @Test
     public void testVersionCodeAdd() throws Exception {
         releasePreparer.createVersionPropertiesFileIfNotExist(versionPropertyFilePath)
-        releasePreparer.versionCodeAdd(versionPropertyFilePath, ReleasePreparer.VersionNameType.PATCH)
+        releasePreparer.setAddedVersionCode(versionPropertyFilePath, ReleasePreparer.VersionNameType.PATCH)
         File file = new File(versionPropertyFilePath)
         Properties properties = new Properties()
         properties.load(new FileInputStream(file))

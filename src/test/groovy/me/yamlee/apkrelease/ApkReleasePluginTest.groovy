@@ -80,31 +80,22 @@ class ApkReleasePluginTest {
 
         project.apkRelease{
             branchName = 'test_branch'
+            logIdentifyTag = "*"
+            versionType="patch"
         }
 
         project.apkRelease.apkDistribute {
 
             haojin {
-                pgyerApiKey = "fb914b7d5b72fc11622cafaa3dfb183f"
-                pgyerUserKey = "ebdbfa7770bec238a0e9770e79459210"
-            }
-            release {
-                pgyerApiKey = "3d109b16b9b16a8442eb601956c8f8af"
-                pgyerUserKey = "9f7e464c5841eed38ef33709d5f8cd8a"
+                pgyerApiKey = "d850a2d47152c163ce9e58dc70ce3db6"
+                pgyerUserKey = "5a1b726ce3904b2de445234f6fa4bb6c"
+                generateChangeLog = false;
+                autoCommitToCVS = false;
+                autoAddVersionCode = true;
             }
         }
     }
 
-    @Test
-    public void testApkReleasePlugin() throws Exception {
-
-
-        def releaseTask = project.tasks.findByName("apkDistRelease")
-        assertThat(releaseTask, Matchers.notNullValue())
-
-//        def task = project.tasks.findByName("apkDistHaojin")
-//        task.execute()
-    }
 
     @Test
     public void testDistTask() throws Exception {
@@ -119,6 +110,12 @@ class ApkReleasePluginTest {
             println "assembleHaojin task run"
         }
         haojinTask.execute()
+    }
+
+    @Test
+    public void testPrepare() throws Exception {
+        def prepareTask = project.tasks.findByName("releasePrepare")
+        prepareTask.execute()
     }
 
     @Test

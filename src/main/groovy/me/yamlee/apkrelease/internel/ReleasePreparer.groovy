@@ -1,7 +1,6 @@
 package me.yamlee.apkrelease.internel
 
 import me.yamlee.apkrelease.Constants
-import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import me.yamlee.apkrelease.internel.vcs.LogMessage
 import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.gradle.api.Project
@@ -53,17 +52,28 @@ class ReleasePreparer {
     def run(String logIdentifyTag, VersionNameType type, String buildFlavorName) {
         String filePath = Constants.releaseFilePath(project)
         def items = project.apkRelease.distributeTargets
-        for (ReleaseTarget target in items) {
+        LOG.lifecycle("...preparer iterate flavors....")
+        LOG.lifecycle("...flavors size is:${items.size()}....")
+        for (target in items) {
             String flavorName = target.name
             if (flavorName.equalsIgnoreCase(buildFlavorName)) {
+                LOG.lifecycle("...find target flavor is:${flavorName}....")
                 if (createVersionPropertiesFileIfNotExist(filePath)) {
+                    String version;
                     if (target.autoAddVersionCode) {
-                        versionCodeAdd(filePath, type)
+                        LOG.lifecycle("...Add version code enabled,now add version code....")
+                        version = setAddedVersionCode(filePath, type)
+                    } else {
+                        LOG.lifecycle("...Add version code disabled,just reading exist version code....")
+                        version = setVersionCode(filePath)
                     }
                     if (target.generateChangeLog) {
-                        generateChangeLog(androidProxy.apkVersionName, logIdentifyTag)
+                        LOG.lifecycle("...Generate change log enabled,now generating change log...")
+                        generateChangeLog(version, logIdentifyTag)
                     }
                 }
+            } else {
+                LOG.lifecycle("...not target flavor:${flavorName}...")
             }
         }
 
@@ -82,6 +92,7 @@ class ReleasePreparer {
         List<LogMessage> history
         if (lastReleaseCommitId == null || lastReleaseCommitId.equals("")) {
             history = vcsOperator.logAll()
+            saveLatestCommitId(newestReleaseCommitId)
         } else {
             history = vcsOperator.log(lastReleaseCommitId, newestReleaseCommitId)
         }
@@ -121,6 +132,7 @@ class ReleasePreparer {
                 file.createNewFile()
             }
             FileWriter fileWriter = new FileWriter(file, true)
+            fileWriter.append("\n")
             fileWriter.append(stringBuilder.toString())
             fileWriter.close()
         } catch (IOException e) {
@@ -128,8 +140,19 @@ class ReleasePreparer {
         }
     }
 
+    void saveLatestCommitId(String commitId) {
+        String filePath = Constants.releaseFilePath(project)
+        Properties properties = new Properties()
+        FileInputStream fileInputStream = new FileInputStream(filePath)
+        properties.load(fileInputStream)
+        properties.setProperty(KEY_LAST_COMMIT_RECORD, commitId)
+        FileOutputStream fileOutputStream = new FileOutputStream(filePath)
+        properties.store(fileOutputStream, "Modify last commit id")
+        fileInputStream.close()
+        fileOutputStream.close()
+    }
 
-    void versionCodeAdd(String filePath, VersionNameType versionNameType) {
+    String setAddedVersionCode(String filePath, VersionNameType versionNameType) {
         Properties properties = new Properties()
         FileInputStream fileInputStream = new FileInputStream(filePath)
         properties.load(fileInputStream)
@@ -157,6 +180,22 @@ class ReleasePreparer {
         properties.store(fileOutputStream, "Modify new version")
         fileInputStream.close()
         fileOutputStream.close()
+        return versionName + Constants.FILE_CONNECTOR + versionCode
+    }
+
+    String setVersionCode(String filePath) {
+        Properties properties = new Properties()
+        FileInputStream fileInputStream = new FileInputStream(filePath)
+        properties.load(fileInputStream)
+        def versionCode = properties.getProperty(KEY_VERSION_CODE)
+        String versionName = properties.getProperty(KEY_VERSION_NAME)
+
+        properties.setProperty(KEY_VERSION_CODE, String.valueOf(versionCode))
+        properties.setProperty(KEY_VERSION_NAME, String.valueOf(versionName))
+        project.extensions.ext.versionCode = versionCode
+        project.extensions.ext.versionName = versionName
+        fileInputStream.close()
+        return versionName + Constants.FILE_CONNECTOR + versionCode
     }
 
     def formatVersionName(String[] versionNameArray) {
