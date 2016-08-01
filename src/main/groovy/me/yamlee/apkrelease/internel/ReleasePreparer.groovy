@@ -1,6 +1,7 @@
 package me.yamlee.apkrelease.internel
 
 import me.yamlee.apkrelease.Constants
+import me.yamlee.apkrelease.internel.extension.ReleaseTarget
 import me.yamlee.apkrelease.internel.vcs.LogMessage
 import me.yamlee.apkrelease.internel.vcs.VcsOperator
 import org.gradle.api.Project
@@ -49,12 +50,23 @@ class ReleasePreparer {
         this.project = project
     }
 
-    def run(String logIdentifyTag, VersionNameType type) {
+    def run(String logIdentifyTag, VersionNameType type, String buildFlavorName) {
         String filePath = Constants.releaseFilePath(project)
-        if (createVersionPropertiesFileIfNotExist(filePath)) {
-            versionCodeAdd(filePath, type)
-            generateChangeLog(androidProxy.apkVersionName, logIdentifyTag)
+        def items = project.apkRelease.distributeTargets
+        for (ReleaseTarget target in items) {
+            String flavorName = target.name
+            if (flavorName.equalsIgnoreCase(buildFlavorName)) {
+                if (createVersionPropertiesFileIfNotExist(filePath)) {
+                    if (target.autoAddVersionCode) {
+                        versionCodeAdd(filePath, type)
+                    }
+                    if (target.generateChangeLog) {
+                        generateChangeLog(androidProxy.apkVersionName, logIdentifyTag)
+                    }
+                }
+            }
         }
+
     }
 
     def generateChangeLog(String version, String logIdentifyTag) {

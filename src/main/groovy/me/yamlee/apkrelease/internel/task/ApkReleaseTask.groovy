@@ -19,8 +19,6 @@ class ApkReleaseTask extends DefaultTask {
     @TaskAction
     def runTask() {
         LOG.lifecycle("--------Apk Distribute task begin-------")
-
-
         ReleaseJobManager manager = new ReleaseJobManager(project, new ApkFileResolverIml())
         manager.run(buildFlavorName)
         LOG.lifecycle("--------Apk Distribute task end-------")

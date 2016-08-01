@@ -87,6 +87,13 @@ apkRelease {
             pgyerApiKey = "...."
             //蒲公英使用的用户key
             pgyerUserKey = "..."
+            //设置是否自动增加版本号,不设置,默认为true
+            autoAddVersionCode = false
+            //设置是否自动创建tag并提交到版本控制系统,如:git,不设置,默认为true
+            autoCommitToCVS = false
+            //设置是否生成changelog,不设置,默认为true
+            generateChangeLog = false;
+            
         }
     }
 }

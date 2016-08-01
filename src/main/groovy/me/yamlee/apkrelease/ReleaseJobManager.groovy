@@ -68,10 +68,13 @@ class ReleaseJobManager {
                 def uploadTask = project.tasks.findByName("uploadPgyer")
                 uploadTask.execute()
             }
+            if (targetName.equalsIgnoreCase(buildFlavorName) && target.autoCommitToCVS) {
+                //3.Commit msg to version control system
+                VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
+                vcsAutoCommitor.commitMsgToVcs()
+            }
         }
 
-        //3.Commit msg to version control system
-        VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
-        vcsAutoCommitor.commitMsgToVcs()
+
     }
 }

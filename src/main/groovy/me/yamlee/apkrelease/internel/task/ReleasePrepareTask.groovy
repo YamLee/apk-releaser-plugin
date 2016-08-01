@@ -15,6 +15,7 @@ class ReleasePrepareTask extends DefaultTask {
     private static final Logger LOG = Logging.getLogger(ReleasePrepareTask.class);
     String logIdentifyTag = "*"
     String versionNameAddType = "patch"
+    String buildFlavorName;
 
     @TaskAction
     def runTask() {
@@ -31,7 +32,7 @@ class ReleasePrepareTask extends DefaultTask {
         if (null == logIdentifyTag || logIdentifyTag.equals("")) {
             logIdentifyTag = "*"
         }
-        preparer.run(logIdentifyTag, versionNameType)
+        preparer.run(logIdentifyTag, versionNameType, buildFlavorName)
 
         LOG.lifecycle("--------Prepare task end--------")
     }

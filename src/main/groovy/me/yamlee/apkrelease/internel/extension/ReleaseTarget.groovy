@@ -21,6 +21,18 @@ class ReleaseTarget implements Named {
      * give apk file name template when rename generated apk file
      */
     String apkFileNameTemplate
+    /**
+     * set if need auto generate change log
+     */
+    boolean generateChangeLog = true;
+    /**
+     * set if need auto create tags and commit to cvs
+     */
+    boolean autoCommitToCVS = true;
+    /**
+     * set if need auto add app version code
+     */
+    boolean autoAddVersionCode = true;
 
     ReleaseTarget(String name) {
         this.name = name
