@@ -115,12 +115,14 @@ apkRelease {
 在AndroidStudio的Gradle视窗中可以找到一个apkrelease的任务组，组下为相对应的任务
 
 1. addPatchVersionName，addMinorVersionName，addMajorVersionName:为升级相应版本号的任务
+
 2. apkDist**StoreRelease** : 其中加粗内容为buildVariant根据你在android中配置的buildType和buildFlavor自动改变，此任务会走一个完整的打包流程：提取changeLog -> 生成apk -> 在git中创建tag和提交打包信息 -> push到远程仓库
-> 需要注意，升级版本号任务并不包含在apkDist任务中，如果要升级版本号，需要手动运行addPatchVersionName等系列任务或者手动修改**release.properties**文件中对应的版本信息。
+
 3. channelFrom**StoreRelease**: 多渠道打包，运行此任务，会自动在***./build/outputs/apk***目录下查找相应的apk，找到第一个便会执行多渠道打包任务，打包的渠道列表或通过项目根目录的**channel.properties**文件中获取，如果项目根目录中并未创建此文件，插件会自动回你创建，但是不会在其中添加任务渠道信息，所以渠道信息需要你自己添加：key=description,如：googlePlay=谷歌市场；多渠道使用的key便是googlePlay
+
 4. channelFrom**StoreRelease**WithNewBuild:此任务与上一任务执行的步骤是相同的，唯一不同的是，它会重新执行一遍apk aseemble逻辑，即会重新生成apk，再进行多渠道打包
 
-
+> 需要注意，升级版本号任务并不包含在apkDist任务中，如果要升级版本号，需要手动运行addPatchVersionName等系列任务或者手动修改**release.properties**文件中对应的版本信息。
 
 ## 多渠道打包获取渠道名称方法
 
