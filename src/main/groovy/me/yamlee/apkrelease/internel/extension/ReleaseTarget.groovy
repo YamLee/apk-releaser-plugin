@@ -29,10 +29,6 @@ class ReleaseTarget implements Named {
      * set if need auto create tags and commit to cvs
      */
     boolean autoCommitToCVS = true;
-    /**
-     * set if need auto add app version code
-     */
-    boolean autoAddVersionCode = true;
 
     ReleaseTarget(String name) {
         this.name = name

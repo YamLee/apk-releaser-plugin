@@ -11,7 +11,6 @@ class ApkReleaseExtension {
     final private NamedDomainObjectContainer<ReleaseTarget> distributeTargets
     String apkPath
     String logIdentifyTag
-    String versionType
     String branchName
 
     ApkReleaseExtension(NamedDomainObjectContainer<ReleaseTarget> distributeTargets) {

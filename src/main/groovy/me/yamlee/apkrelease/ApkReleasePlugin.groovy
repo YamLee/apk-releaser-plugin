@@ -60,17 +60,23 @@ class ApkReleasePlugin implements Plugin<Project> {
         project.extensions.apkRelease = apkReleaseExtension
 
 
-        project.task("addPatchVersionName", type: AddVersionCodeTask, {
+        def patchVersionAddTask = project.task("addPatchVersionName", type: AddVersionCodeTask, {
             versionNameType = ReleasePreparer.VersionNameType.PATCH
         })
+        patchVersionAddTask.group='apkRelease'
+        patchVersionAddTask.description = 'add patch version name'
 
-        project.task("addMinorVersionName", type: AddVersionCodeTask, {
+        def minorVersionAddTask = project.task("addMinorVersionName", type: AddVersionCodeTask, {
             versionNameType = ReleasePreparer.VersionNameType.MINOR
         })
+        minorVersionAddTask.group='apkRelease'
+        minorVersionAddTask.description = 'add minor version name'
 
-        project.task("addMajorVersionName", type: AddVersionCodeTask, {
+        def majorVersionAddTask = project.task("addMajorVersionName", type: AddVersionCodeTask, {
             versionNameType = ReleasePreparer.VersionNameType.MAJOR
         })
+        majorVersionAddTask.group='apkRelease'
+        majorVersionAddTask.description = 'add major version name'
 
         VcsOperator vcsOperator = new GitVcsOperator()
         AndroidProxy androidProxy = new AndroidProxy(project)

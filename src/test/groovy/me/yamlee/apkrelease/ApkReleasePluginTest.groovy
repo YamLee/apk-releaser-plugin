@@ -83,7 +83,6 @@ class ApkReleasePluginTest {
         project.apkRelease{
             branchName = 'test_branch'
             logIdentifyTag = "*"
-            versionType="patch"
         }
 
         project.apkRelease.apkDistribute {
@@ -93,7 +92,6 @@ class ApkReleasePluginTest {
                 pgyerUserKey = "5a1b726ce3904b2de445234f6fa4bb6c"
                 generateChangeLog = false;
                 autoCommitToCVS = false;
-                autoAddVersionCode = true;
             }
         }
     }

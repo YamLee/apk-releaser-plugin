@@ -49,11 +49,9 @@ class ReleasePreparer {
         this.project = project
     }
 
-    def run(String logIdentifyTag, VersionNameType type, String buildFlavorName) {
+    def run(String logIdentifyTag, String buildFlavorName) {
         String filePath = Constants.releaseFilePath(project)
         def items = project.apkRelease.distributeTargets
-        LOG.lifecycle("...preparer iterate flavors....")
-        LOG.lifecycle("...flavors size is:${items.size()}....")
         for (target in items) {
             String flavorName = target.name
             if (flavorName.equalsIgnoreCase(buildFlavorName)) {
@@ -61,8 +59,10 @@ class ReleasePreparer {
                 if (createVersionPropertiesFileIfNotExist(filePath)) {
                     String version = setVersionCode(filePath)
                     if (target.generateChangeLog) {
-                        LOG.lifecycle("...Generate change log enabled,now generating change log...")
+                        LOG.lifecycle("...Generate change log enabled,now generating change log")
                         generateChangeLog(version, logIdentifyTag)
+                    } else {
+                        LOG.lifecycle("...Generate change log disabled,now go to next step")
                     }
                 }
             } else {

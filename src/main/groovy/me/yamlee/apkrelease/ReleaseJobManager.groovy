@@ -34,24 +34,15 @@ class ReleaseJobManager {
             throw new GradleException("android task \"assemble$formatName\" not found")
         }
 
+        //0. Generate change log
         VcsOperator vcsOperator = new GitVcsOperator()
         AndroidProxy androidProxy = new AndroidProxy(project)
         ReleasePreparer releasePreparer = new ReleasePreparer(project, vcsOperator, androidProxy)
         String logIdentifyTag = project.extensions.apkRelease.logIdentifyTag
-        String versionNameAddType = project.extensions.apkRelease.versionType
-        ReleasePreparer.VersionNameType versionNameType
-        if (versionNameAddType == "major") {
-            versionNameType = ReleasePreparer.VersionNameType.MAJOR
-        } else if (versionNameAddType == "minor") {
-            versionNameType = ReleasePreparer.VersionNameType.MINOR
-        } else {
-            versionNameType = ReleasePreparer.VersionNameType.PATCH
-        }
         if (null == logIdentifyTag || logIdentifyTag.equals("")) {
             logIdentifyTag = "*"
         }
-        releasePreparer.run(logIdentifyTag, versionNameType, buildFlavorName)
-        LOG.lifecycle("...release task configure end...")
+        releasePreparer.run(logIdentifyTag, buildFlavorName)
 
         //1.Find target apk file
         File apkFile = null
@@ -65,13 +56,14 @@ class ReleaseJobManager {
             throw new GradleException("Can not upload apk file to pgyer because can not find target apk file")
         }
 
-        //2.Upload apk file to pgyer
+
         def items = project.apkRelease.distributeTargets
         LOG.lifecycle("...distribute iterate flavors....")
         LOG.lifecycle("...flavors size is:${items.size()}....")
         for (target in items) {
             String targetName = target.name
             if (targetName.equalsIgnoreCase(buildFlavorName)) {
+                //2.Upload apk file to pgyer
                 String pgyerApiKey = target.pgyerApiKey
                 String pgyerUserKey = target.pgyerUserKey
                 LOG.info("$buildFlavorName pgyerApiKey is ${pgyerApiKey}")
@@ -91,10 +83,13 @@ class ReleaseJobManager {
                 def uploadTask = project.tasks.findByName("uploadPgyer")
                 uploadTask.execute()
 
+                //3.Commit msg to version control system
                 if (target.autoCommitToCVS) {
-                    //3.Commit msg to version control system
+                    LOG.lifecycle("...autoCommitToCVS enabled ,now auto commit msg and create target tag,then push to remote")
                     VcsAutoCommitor vcsAutoCommitor = new VcsAutoCommitor(project, new GitVcsOperator(), new AndroidProxy(project))
                     vcsAutoCommitor.commitMsgToVcs()
+                } else {
+                    LOG.lifecycle("...autoCommitToCVS disabled ,now all child task finished")
                 }
             }
         }
