@@ -11,6 +11,9 @@ allprojects {
     }
 }
 
+//plugins {
+//    id "com.jfrog.bintray" version "1.7"
+//}
 
 buildscript {
     repositories {
@@ -21,24 +24,25 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath 'org.ajoberstar:gradle-git:1.4.2'
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.5"
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
 //        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
 //        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+
 }
 
-apply plugin: "com.gradle.plugin-publish"
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: 'com.bmuschko.nexus'
+apply plugin: 'maven-publish'
 apply plugin: 'idea'
-
+apply plugin: 'com.jfrog.bintray'
 //apply plugin: 'com.github.dcendents.android-maven'
 //apply plugin: 'com.jfrog.bintray'
+
+
 
 
 dependencies {
@@ -50,22 +54,34 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
 
-version = '0.3.0'
+version = '0.3.1'
 group = "me.yamlee"
 
-pluginBundle {
-    website = 'https://github.com/YamLee/apk-releaser-plugin'
-    vcsUrl = 'git@github.com:YamLee/apk-releaser-plugin.git'
-    description = 'Apk Release Plugin'
-    tags = ['Apk', 'Release', 'Auto', 'Distribute']
 
-    plugins {
-        apkReleasePlugin {
-            id = 'me.yamlee.apkrelease'
-            displayName = 'Apk Release Plugin'
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId 'apk-release-plugin'
+            version version
         }
     }
 }
+
+//pluginBundle {
+//    website = 'https://github.com/YamLee/apk-releaser-plugin'
+//    vcsUrl = 'git@github.com:YamLee/apk-releaser-plugin.git'
+//    description = 'Apk Release Plugin'
+//    tags = ['Apk', 'Release', 'Auto', 'Distribute']
+//
+//    plugins {
+//        apkReleasePlugin {
+//            id = 'me.yamlee.apkrelease'
+//            displayName = 'Apk Release Plugin'
+//        }
+//    }
+//}
 
 uploadArchives {
     repositories {
@@ -74,3 +90,27 @@ uploadArchives {
         }
     }
 }
+
+
+bintray{
+    user = project.property('bintray_user')
+    key = project.property('bintray_key')
+    publications = ['MyPublication']
+    configurations = ['archives']
+    pkg{
+        repo = 'maven'
+        name = 'apk-release-plugin'
+        userOrg = 'yamlee'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'git@github.com:YamLee/apk-releaser-plugin.git'
+        version {
+            name = '0.3.1'
+            desc = 'Apk Release Plugin 0.3.1'
+            released  = new Date()
+            vcsTag = '0.3.1'
+            attributes = ['gradle-plugin': 'me.yamlee:apk-release-plugin:0.3.0']
+        }
+    }
+
+}
+
