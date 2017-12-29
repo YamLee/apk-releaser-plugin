@@ -1,15 +1,3 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
-
-allprojects {
-    repositories {
-        jcenter()
-        mavenCentral()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-}
 
 //plugins {
 //    id "com.jfrog.bintray" version "1.7"
@@ -25,11 +13,8 @@ buildscript {
     }
     dependencies {
         classpath 'org.ajoberstar:gradle-git:1.4.2'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
-//        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
-//        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     }
 
 }
@@ -39,35 +24,37 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'idea'
 apply plugin: 'com.jfrog.bintray'
-//apply plugin: 'com.github.dcendents.android-maven'
-//apply plugin: 'com.jfrog.bintray'
-
 
 
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile 'com.android.tools.build:gradle:1.5.0'
+    compile 'com.android.tools.build:gradle:3.0.1'
     compile 'org.ajoberstar:gradle-git:1.4.2'
     compile 'org.quanqi:pgyer:0.1.2'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
+    testCompile 'junit:junit:4.12'
 }
 
-version = '0.3.1'
-group = "me.yamlee"
+version = '0.3.2'
+group = "me.yamlee.apkrelease"
 
 
-publishing {
-    publications {
-        MyPublication(MavenPublication) {
-            from components.java
-            groupId group
-            artifactId 'apk-release-plugin'
-            version version
-        }
-    }
-}
+// 应用插件
+apply from: '../bintray.gradle'
+
+//
+//publishing {
+//    publications {
+//        MyPublication(MavenPublication) {
+//            from components.java
+//            groupId group
+//            artifactId 'apk-release-plugin'
+//            version version
+//        }
+//    }
+//}
 
 //pluginBundle {
 //    website = 'https://github.com/YamLee/apk-releaser-plugin'
@@ -83,34 +70,37 @@ publishing {
 //    }
 //}
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: uri('../repo'))
-        }
-    }
-}
-
-
-bintray{
-    user = project.property('bintray_user')
-    key = project.property('bintray_key')
-    publications = ['MyPublication']
-    configurations = ['archives']
-    pkg{
-        repo = 'maven'
-        name = 'apk-release-plugin'
-        userOrg = 'yamlee'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'git@github.com:YamLee/apk-releaser-plugin.git'
-        version {
-            name = '0.3.1'
-            desc = 'Apk Release Plugin 0.3.1'
-            released  = new Date()
-            vcsTag = '0.3.1'
-            attributes = ['gradle-plugin': 'me.yamlee:apk-release-plugin:0.3.0']
-        }
-    }
-
-}
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url: uri('../repo'))
+//        }
+//    }
+//}
+//
+//
+//bintray{
+//    user = project.property('bintray_user')
+//    key = project.property('bintray_key')
+//    publications = ['MyPublication']
+//    configurations = ['archives']
+//    pkg{
+//        repo = 'maven'
+//        name = 'apk-release-plugin'
+//        desc = 'Android gradle plugin for release apk'
+//        websiteUrl = 'https://github.com/YamLee/apk-releaser-plugin'
+//        issueTrackerUrl = 'https://github.com/YamLee/apk-releaser-plugin/issues'
+//        userOrg = 'yamlee'
+//        licenses = ['Apache-2.0']
+//        vcsUrl = 'git@github.com:YamLee/apk-releaser-plugin.git'
+//        version {
+//            name = '0.3.2'
+//            desc = 'Apk Release Plugin 0.3.2'
+//            released  = new Date()
+//            vcsTag = '0.3.2'
+//            attributes = ['gradle-plugin': 'me.yamlee:apk-release-plugin:0.3.2']
+//        }
+//    }
+//
+//}
 

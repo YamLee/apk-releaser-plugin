@@ -89,13 +89,12 @@ class ApkReleasePlugin implements Plugin<Project> {
             //check if staging variant
             log.lifecycle "android variant name ---> $variant.name"
             def defaultConfig = project.android.defaultConfig
-            variant.outputs.each { output ->
-                File file = output.outputFile
-                String fileName = "Near_Merchant_v${defaultConfig.versionName}_${variant.name}_build${defaultConfig.versionCode}.apk"
+            variant.outputs.all {
+                String fileName = "${project.name}_v${defaultConfig.versionName}_${variant.name}_build${defaultConfig.versionCode}.apk"
                 log.lifecycle("renamed apk file is $fileName")
-                File newApkFile = new File(file.parent, fileName)
-                output.outputFile = newApkFile
-                global.apkFilePath = newApkFile.absolutePath
+                outputFileName = fileName
+                global.apkFilePath = dirName + File.separator + outputFileName
+                log.lifecycle("renamed apk file absolutePath is ${global.apkFilePath}")
             }
         }
 

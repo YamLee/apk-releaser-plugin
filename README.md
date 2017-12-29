@@ -18,13 +18,8 @@
 
 ```
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
   dependencies {
-    classpath "gradle.plugin.me.yamlee:apk-release-plugin:0.3.0"
+    classpath "me.yamlee.apkrelease:plugin:0.3.2"
   }
 }
 ```
